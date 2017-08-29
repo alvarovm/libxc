@@ -138,7 +138,7 @@ const xc_func_info_type xc_func_info_mgga_x_revm06_l = {
   XC_FAMILY_MGGA,
   {&xc_ref_Wang2017_8487, NULL, NULL, NULL, NULL},
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
-  MIN_DENS,
+  5.0e-13,
   0, NULL, NULL,
   mgga_x_m06l_init, NULL,
   NULL, NULL, work_mgga_x,
