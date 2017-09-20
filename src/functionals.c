@@ -139,35 +139,39 @@ int xc_number_of_functionals()
   exit(1);
 }
 
-/*------------------------------------------------------*/
-int *xc_available_functional_numbers()
+int xc_maximum_name_length()
 {
-  int ii, N;
-  int *list;
+  int i, N, maxlen, tmp;
 
   N=xc_number_of_functionals();
 
-  list=(int *) malloc(N*sizeof(int));
+  maxlen=0;
+  for(i=0;i<N;i++){
+    tmp=strlen(xc_functional_keys[i].name);
+    if(tmp > maxlen) maxlen=tmp;
+  }
+
+  return maxlen;
+}
+
+/*------------------------------------------------------*/
+void xc_available_functional_numbers(int *list)
+{
+  int ii, N;
+  N=xc_number_of_functionals();
   for(ii=0;ii<N;ii++){
     list[ii]=xc_functional_keys[ii].number;
   }
-
-  return list;
 }
 
-char **xc_available_functional_names()
+void xc_available_functional_names(char **list)
 {
   int ii, N;
-  char **list;
 
   N=xc_number_of_functionals();
-
-  list=(char **) malloc(N*sizeof(char *));
   for(ii=0;ii<N;ii++) {
-    list[ii]=strdup(xc_functional_keys[ii].name);
+    strcpy(list[ii],xc_functional_keys[ii].name);
   }
-
-  return list;
 }
 
 /*------------------------------------------------------*/

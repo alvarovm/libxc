@@ -176,8 +176,9 @@ int   xc_functional_get_number(const char *name);
 char *xc_functional_get_name(int number);
 int   xc_family_from_id(int id, int *family, int *number);
 int   xc_number_of_functionals();
-int  *xc_available_functional_numbers();
-char **xc_available_functional_names();
+int   xc_maximum_name_length();
+void xc_available_functional_numbers(int *list);
+void xc_available_functional_names(char **list);
 
   xc_func_type *xc_func_alloc();
 int   xc_func_init(xc_func_type *p, int functional, int nspin);
