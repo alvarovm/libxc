@@ -19,6 +19,8 @@
 
 #include "xc.h"
 #include "funcs_key.c"
+#include <string.h>
+#include <strings.h>
 
 extern xc_func_info_type 
   *xc_lda_known_funct[], 
@@ -121,6 +123,51 @@ int xc_family_from_id(int id, int *family, int *number)
   }
 
   return XC_FAMILY_UNKNOWN;
+}
+
+/*------------------------------------------------------*/
+int xc_number_of_functionals()
+{
+  int num;
+
+  for(num=0;;num++){
+    if(xc_functional_keys[num].number == -1)
+      return num;
+  }
+
+  fprintf(stderr, "Internal error in functionals.c\n");
+  exit(1);
+}
+
+/*------------------------------------------------------*/
+int *xc_available_functional_numbers()
+{
+  int ii, N;
+  int *list;
+
+  N=xc_number_of_functionals();
+
+  list=(int *) malloc(N*sizeof(int));
+  for(ii=0;ii<N;ii++){
+    list[ii]=xc_functional_keys[ii].number;
+  }
+
+  return list;
+}
+
+char **xc_available_functional_names()
+{
+  int ii, N;
+  char **list;
+
+  N=xc_number_of_functionals();
+
+  list=(char **) malloc(N*sizeof(char *));
+  for(ii=0;ii<N;ii++) {
+    list[ii]=strdup(xc_functional_keys[ii].name);
+  }
+
+  return list;
 }
 
 /*------------------------------------------------------*/

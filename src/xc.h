@@ -175,7 +175,11 @@ typedef struct xc_func_type xc_func_type;
 int   xc_functional_get_number(const char *name);
 char *xc_functional_get_name(int number);
 int   xc_family_from_id(int id, int *family, int *number);
-xc_func_type *xc_func_alloc();
+int   xc_number_of_functionals();
+int  *xc_available_functional_numbers();
+char **xc_available_functional_names();
+
+  xc_func_type *xc_func_alloc();
 int   xc_func_init(xc_func_type *p, int functional, int nspin);
 void  xc_func_end(xc_func_type *p);
 void  xc_func_free(xc_func_type *p);
