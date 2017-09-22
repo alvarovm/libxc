@@ -1,31 +1,4 @@
-# libxc [![Build Status](https://travis-ci.org/loriab/libxc.svg?branch=master)](https://travis-ci.org/loriab/libxc)
-
-Miguel A.L. Marques's Libxc (http://www.tddft.org/programs/Libxc) wrapped in CMake for Psi4 (https://github.com/psi4/psi4)
-
-### History
-
-This is the Libxc project (http://www.tddft.org/programs/Libxc) by
-Prof. Miguel A.L. Marques of Martin-Luther-Universität Halle-Wittenberg.
-
-Libxc is written in C. It has source and manual are available at the above
-website and, as distributed, builds with `make`.
-
-### This Repository
-
-Libxc has been in the *ab initio* quantum chemistry package Psi4
-(http://psicode.org/, https://github.com/psi4/psi4) since Novenber 2016. In Psi4,
-it builds with `cmake`. This repository contains an unpacked tarball of Libxc 3.0.0
-source, which is otherwise untouched, and the files below
-
-* [cmake/](cmake) directory
-* [CMakeLists.txt](CMakeLists.txt) top-level
-* [testsuite/CMakeLists.txt](testsuite/CMakeLists.txt) tests
-* [config.h.cmake.in](config.h.cmake.in) a dummy config file
-* this README-CMake.md
-
-Those files will be preserved in this repository (may move to psi4/libxc), but the
-unpacked tarball may be changed to a download command of upstream Libxc. The stress
-here is that the CMake build system is the only value added by this repository.
+## libxc with CMake ##
 
 #### Caveats
 
@@ -33,10 +6,6 @@ here is that the CMake build system is the only value added by this repository.
 * all the fancy libtool options and Fortran interface _not_ tested
 * test suite executed after build via `ctest`. But it has always totally passed or totally failed, which doesn't inspire confidence
 * The generated `libxc_docs.txt` is large, and the generation step sometimes balks on it, leading to `xc_funcs.h` not found errors. Just execute again.
-
-#### Version
-
-This codebase was copied from upstream (above website) at 3.0.0.
 
 #### Building
 
