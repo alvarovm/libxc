@@ -30,14 +30,13 @@ generate ```configure``` with ```àutoreconf -i```.
 
 Support for CMake has also been recently contributed by Lori Burns.
 
-#### Caveats
-
+The CMake file has the following caveats
 * tested on Linux and Mac, static and shared lib, namespaced and non-namespaced headers, but really only to the extent that it works for Psi4
 * all the fancy libtool options and Fortran interface _not_ tested
 * test suite executed after build via `ctest`. But it has always totally passed or totally failed, which doesn't inspire confidence
 * The generated `libxc_docs.txt` is large, and the generation step sometimes balks on it, leading to `xc_funcs.h` not found errors. Just execute again.
 
-#### Building
+#### Building with CMake
 
 ```bash
 cmake -H. -Bobjdir
@@ -54,16 +53,16 @@ The build is also responsive to
 
 See [CMakeLists.txt](CMakeLists.txt) for options details. All these build options should be passed as `cmake -DOPTION`.
 
-#### Detecting
+#### Detecting with CMake
 
-This project installs with `LibxcConfig.cmake`, `LibxcConfigVersion.cmake`, and `LibxcTargets.cmake` files suitable for use with CMake [`find_package()`](https://cmake.org/cmake/help/v3.2/command/find_package.html) in `CONFIG` mode.
+CMake builds install with `LibxcConfig.cmake`, `LibxcConfigVersion.cmake`, and `LibxcTargets.cmake` files suitable for use with CMake [`find_package()`](https://cmake.org/cmake/help/v3.2/command/find_package.html) in `CONFIG` mode.
 
 * `find_package(Libxc)` - find any xc libraries and headers
 * `find_package(Libxc 3.0.0 EXACT CONFIG REQUIRED COMPONENTS static)` - find Libxc exactly version 3.0.0 built with static libraries or die trying
 
 See [cmake/LibxcConfig.cmake.in](cmake/LibxcConfig.cmake.in) for details of how to detect the Config file and what CMake variables and targets are exported to your project.
 
-#### Using
+#### Use with CMake
 
 After `find_package(Libxc ...)`,
 
