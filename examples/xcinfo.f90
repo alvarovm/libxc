@@ -35,10 +35,10 @@ program xcinfo
   write(*, '(4a)') trim(s1), ' (', trim(s2), ')'
 
   i = 0
-  call xc_f90_info_refs(xc_info, i, str, s1)
+  call xc_f90_info_refs(xc_info, i, s1)
   do while(i >= 0)
     write(*, '(a,i1,2a)') '[', i, '] ', trim(s1)
-    call xc_f90_info_refs(xc_info, i, str, s1)
+    call xc_f90_info_refs(xc_info, i, s1)
   end do
 
   call xc_f90_func_end(xc_func)
