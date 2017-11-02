@@ -79,10 +79,13 @@ The distribution is organized as follows
 
 | | |
 | --- | --- |
-| ./build   | pkgconfig and Fedora spec files    |
-| ./m4      | m4 scripts used by configure.ac, and libxc.m4 used by other projects linking to libxc |
-| ./src     | source files         |
-| ./testsuite | regression tests  |
+| ./cmake | CMake helper files |
+| ./build | pkgconfig and Fedora spec files |
+| ./m4 | m4 scripts used by configure.ac, and libxc.m4 used by other projects linking to libxc |
+| ./maple |the Maple source code for the functionals |
+| ./scripts | various scripts for libxc development |
+| ./src | source files |
+| ./testsuite | regression tests |
 
 The most important contents of the src directory for users are
 
