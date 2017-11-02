@@ -8,7 +8,6 @@ program xcinfo
   TYPE(xc_f90_pointer_t) :: xc_info
   integer :: i
   character(len=120) :: s1, s2
-  type(xc_f90_pointer_t) :: str
 
   call xc_f90_func_init(xc_func, xc_info, XC_GGA_C_PBE, XC_UNPOLARIZED)
 
