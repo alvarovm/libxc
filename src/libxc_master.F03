@@ -3,22 +3,11 @@
 !!
 !! This file is dual-licensed under a GPL and a BSD license
 !!
-!! GPL License:
+!! MPL License:
 !!
-!! This program is free software; you can redistribute it and/or modify
-!! it under the terms of the GNU Lesser General Public License as published by
-!! the Free Software Foundation; either version 2, or (at your option)
-!! any later version.
-!!
-!! This program is distributed in the hope that it will be useful,
-!! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!! GNU Lesser General Public License for more details.
-!!
-!! You should have received a copy of the GNU Lesser General Public License
-!! along with this program; if not, write to the Free Software
-!! Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-!! 02110-1301, USA.
+!! This Source Code Form is subject to the terms of the Mozilla Public
+!! License, v. 2.0. If a copy of the MPL was not distributed with this
+!! file, You can obtain one at mozilla.org/MPL/2.0/.
 !!
 !! BSD License:
 !!
@@ -598,8 +587,11 @@ module xc_f03_lib_m
     type(xc_f03_func_info_t), intent(in)    :: info
     integer,                intent(inout) :: number ! number of the reference. Must be 0 in the first call
 
+    type(c_ptr) :: next_ref
+    
     reference%ptr = xc_func_info_get_references(info%ptr, number)
-    if (c_associated(xc_func_info_get_references(info%ptr, number + 1))) then
+    next_ref = xc_func_info_get_references(info%ptr, number + 1)
+    if (c_associated(next_ref)) then
       number = number + 1
     else
       number = -1

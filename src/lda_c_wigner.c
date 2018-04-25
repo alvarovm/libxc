@@ -1,26 +1,16 @@
 /*
  Copyright (C) 2006-2007 M.A.L. Marques
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 3 of the License, or
- (at your option) any later version.
-  
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
-  
- You should have received a copy of the GNU Lesser General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ This Source Code Form is subject to the terms of the Mozilla Public
+ License, v. 2.0. If a copy of the MPL was not distributed with this
+ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
 #include "util.h"
 
 #define XC_LDA_C_WIGNER    2   /* Wigner parametrization       */
-#define XC_LDA_C_LP_A    547   /* Lee-Parr reparametrization B */
-#define XC_LDA_C_LP_B    548   /* Lee-Parr reparametrization B */
+#define XC_LDA_XC_LP_A   547   /* Lee-Parr reparametrization B */
+#define XC_LDA_XC_LP_B   548   /* Lee-Parr reparametrization B */
 #define XC_LDA_C_MCWEENY 551   /* McWeeny 76 */
 #define XC_LDA_C_BR78    552   /* Brual & Rothstein 78 */
 #define XC_LDA_C_OW_LYP  573   /* Wigner with corresponding LYP parameters */
@@ -44,11 +34,11 @@ lda_c_wigner_init(xc_func_type *p)
     params->a = -0.44;
     params->b =  7.8;
     break;
-  case XC_LDA_C_LP_A:
+  case XC_LDA_XC_LP_A:
     params->a = -0.8626*RS_FACTOR;
     params->b = 0.0;
     break;
-  case XC_LDA_C_LP_B:
+  case XC_LDA_XC_LP_B:
     params->a = -0.906*RS_FACTOR;
     params->b =  2.1987e-2*RS_FACTOR;
     break;
@@ -92,9 +82,9 @@ const xc_func_info_type xc_func_info_lda_c_wigner = {
   work_lda, NULL, NULL
 };
 
-const xc_func_info_type xc_func_info_lda_c_lp_a = {
-  XC_LDA_C_LP_A,
-  XC_CORRELATION,
+const xc_func_info_type xc_func_info_lda_xc_lp_a = {
+  XC_LDA_XC_LP_A,
+  XC_EXCHANGE_CORRELATION,
   "Lee-Parr reparametrization A",
   XC_FAMILY_LDA,
   {&xc_ref_Lee1990_193, NULL, NULL, NULL, NULL},
@@ -105,9 +95,9 @@ const xc_func_info_type xc_func_info_lda_c_lp_a = {
   work_lda, NULL, NULL
 };
 
-const xc_func_info_type xc_func_info_lda_c_lp_b = {
-  XC_LDA_C_LP_B,
-  XC_CORRELATION,
+const xc_func_info_type xc_func_info_lda_xc_lp_b = {
+  XC_LDA_XC_LP_B,
+  XC_EXCHANGE_CORRELATION,
   "Lee-Parr reparametrization B",
   XC_FAMILY_LDA,
   {&xc_ref_Lee1990_193, NULL, NULL, NULL, NULL},
