@@ -2120,3 +2120,10 @@ func_reference_type xc_ref_Keal2004_5654 = {
 };
 
 
+func_reference_type xc_ref_Baer2005_043002 = {
+  "R. Baer and D. Neuhauser, Phys. Rev. Lett. 94, 043002 (2005)",
+  "10.1103/PhysRevLett.94.043002",
+  "@article{Baer2005_043002,\n  title = {Density Functional Theory with Correct Long-Range Asymptotic Behavior},\n  author = {Baer, Roi and Neuhauser, Daniel},\n  journal = {Phys. Rev. Lett.},\n  volume = {94},\n  issue = {4},\n  pages = {043002},\n  numpages = {4},\n  year = {2005},\n  month = {Feb},\n  publisher = {American Physical Society},\n  doi = {10.1103/PhysRevLett.94.043002},\n  url = {https://link.aps.org/doi/10.1103/PhysRevLett.94.043002}\n}"
+};
+
+
