@@ -4,7 +4,6 @@ Improve existing functionals:
 Add functionals:
 
 LDA:
- *) Short-range LDA correlation functional (Phys. Rev. B 73, 155111 (2006))
  *) Short-range exchange 10.1080/00268979609484488
 
 GGAs:
