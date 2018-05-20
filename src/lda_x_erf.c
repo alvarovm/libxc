@@ -33,7 +33,7 @@ const xc_func_info_type xc_func_info_lda_x_erf = {
   XC_EXCHANGE,
   "Attenuated exchange LDA (erf)",
   XC_FAMILY_LDA,
-  {&xc_ref_Toulouse2004_1047, &xc_ref_Tawada2004_8425, NULL, NULL, NULL},
+  {&xc_ref_Gill1996_1005, &xc_ref_Toulouse2004_1047, &xc_ref_Tawada2004_8425, NULL, NULL},
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC | XC_FLAGS_HAVE_KXC,
   1e-13,
   1, ext_params, set_ext_params,
