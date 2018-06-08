@@ -89,7 +89,7 @@ const xc_func_info_type xc_func_info_mgga_x_mvsbs = {
   {&xc_ref_Furness2018, NULL, NULL, NULL, NULL},
   XC_FLAGS_3D | XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | XC_FLAGS_HAVE_FXC,
   1e-23,
-  4, ext_params, set_ext_params,
+  0, NULL, NULL,
   mgga_x_mvsb_init, NULL, NULL, NULL,
   work_mgga_x,
 };
