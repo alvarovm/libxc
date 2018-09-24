@@ -20,10 +20,10 @@
 #define XC_HYB_GGA_XC_HSE12       479 /* HSE12 by Moussa, Schultz and Chelikowsky */
 #define XC_HYB_GGA_XC_HSE12S      480 /* Short-range HSE12 by Moussa, Schultz, and Chelikowsky */
 #define XC_HYB_GGA_XC_HSE_SOL     481 /* HSEsol functional by Schimka, Harl, and Kresse */
-#define XC_HYB_GGA_XC_LC_WPBE_WHS 486 /* Long-range corrected functional by Weintraub, Henderson and Scuseria al */
+#define XC_HYB_GGA_XC_LC_WPBE_WHS 486 /* Long-range corrected functional by Weintraub, Henderson and Scuseria */
 #define XC_HYB_GGA_XC_LC_WPBEH_WHS 487 /* Long-range corrected functional by Weintraub, Henderson and Scuseria */
-#define XC_HYB_GGA_XC_LC_WPBE08_WHS 488 /* Long-range corrected functional by Weintraub, Henderson and Scuseria al */
-#define XC_HYB_GGA_XC_LC_WPBESOL_WHS 489 /* Long-range corrected functional by Weintraub, Henderson and Scuseria al */
+#define XC_HYB_GGA_XC_LC_WPBE08_WHS 488 /* Long-range corrected functional by Weintraub, Henderson and Scuseria */
+#define XC_HYB_GGA_XC_LC_WPBESOL_WHS 489 /* Long-range corrected functional by Weintraub, Henderson and Scuseria */
 
 /* Note that there is an enormous mess in the literature concerning
    the values of omega in HSE. This is due to an error in the
