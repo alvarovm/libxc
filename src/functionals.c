@@ -62,7 +62,7 @@ char *xc_functional_get_name(int number)
       return NULL;
     if(xc_functional_keys[ii].number == number)
       /* return duplicated: caller has the responsibility to dealloc string */
-      return strdup(xc_functional_keys[ii].name);
+      return strndup(xc_functional_keys[ii].name, 256);
   }
 }
 
