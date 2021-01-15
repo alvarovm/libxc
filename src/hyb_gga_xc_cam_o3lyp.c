@@ -45,13 +45,15 @@ set_ext_params(xc_func_type *p, const double *ext_params)
 
   /* Remove double counting of LDA exchange */
   p->mix_coef[0] = b - a1*c;
-  p->mix_coef[1] = c;
-  p->mix_coef[2] = 1.0 - clyp;
-  p->mix_coef[3] = clyp;
+  p->mix_coef[1] = -(p->mix_coef[0]);
+  p->mix_coef[2] = c;
+  p->mix_coef[3] = -(p->mix_coef[2]);
+  p->mix_coef[4] = 1.0 - clyp;
+  p->mix_coef[5] = clyp;
 
   /* Set range separation */
   xc_func_set_ext_params_name(p->func_aux[0], "_omega", omega);
-  xc_func_set_ext_params_name(p->func_aux[1], "_omega", omega);
+  xc_func_set_ext_params_name(p->func_aux[2], "_omega", omega);
 
   /* Set hybrid terms */
   assert(p->hyb_number_terms == 2);
@@ -67,9 +69,9 @@ set_ext_params(xc_func_type *p, const double *ext_params)
 static void
 hyb_gga_xc_cam_o3lyp_init(xc_func_type *p)
 {
-  static int funcs_id[4] = {XC_LDA_X_ERF, XC_GGA_X_ITYH_OPTX, XC_LDA_C_VWN, XC_GGA_C_LYP};
-  double funcs_coef[4] = {0.0, 0.0, 0.0, 0.0};
-  xc_mix_init(p, 4, funcs_id, funcs_coef);
+  static int funcs_id[6] = {XC_LDA_X_ERF, XC_LDA_X, XC_GGA_X_ITYH_OPTX, XC_GGA_X_OPTX, XC_LDA_C_VWN, XC_GGA_C_LYP};
+  double funcs_coef[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  xc_mix_init(p, 6, funcs_id, funcs_coef);
   xc_hyb_init_cam(p, 0.0, 0.0, 0.0);
 }
 
