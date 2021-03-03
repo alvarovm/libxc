@@ -119,7 +119,10 @@ fi
 AM_CONDITIONAL([HAVE_CUDA], [test x"${enable_cuda}" = x"yes"])
 
 # Checks for programs.
-AC_PROG_CC
+AC_PROG_CC_C99
+if test "x$ac_cv_prog_cc_c99" = "xno" ; then
+    AC_MSG_ERROR([libxc requires a C99 compatible compiler])
+fi
 
 #we may need to set the linker for the cuda case, so pass that to automake
 if test x"$CCLD" = x ; then
