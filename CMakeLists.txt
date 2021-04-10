@@ -33,6 +33,7 @@ endif()
 option_with_default(NAMESPACE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_INCLUDEDIR to which headers are installed. Psi4 wants namespace (e.g., /libxc)" /)
 option_with_print(ENABLE_GENERIC "Enable mostly static linking in shared library" OFF)
 option_with_print(ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
+option_with_print(ENABLE_PYTHON "Install Python API interface" OFF)
 
 # GCC appears to be catching -xHost as "-x Host" which breaks the detection
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
@@ -578,6 +579,29 @@ if(ENABLE_FORTRAN)
       FILE "${PN}Targets-Fortran.cmake"
       DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 endif()
+
+if(ENABLE_PYTHON)
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    cmake_minimum_required(VERSION 3.12)
+    find_package(Python COMPONENTS Interpreter REQUIRED)
+    install(CODE "${Python_EXECUTABLE} -m pip install ${CMAKE_CURRENT_SOURCE_DIR} --install-option='--libxc-cmake-build'")
+  else()
+    set(SOURCE_PYTHON_API
+      pylibxc/__init__.py
+      pylibxc/core.py
+      pylibxc/flags.py
+      pylibxc/functional.py
+      pylibxc/structs.py
+      pylibxc/util.py
+      pylibxc/version.py
+    )
+    install(
+      FILES ${SOURCE_PYTHON_API}
+      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/pylibxc
+    )
+  endif()
+endif()
+
 export(EXPORT c_interface
     NAMESPACE "${PN}::"
     FILE "${PROJECT_BINARY_DIR}/${PN}Targets.cmake")

@@ -61,6 +61,12 @@ class CMakeBuild(build_ext):
 
 
 if __name__ == "__main__":
+    extensions = [CMakeExtension('pylibxc.libxc')]
+    builders = dict(build_ext=CMakeBuild)
+    if '--libxc-cmake-build' in sys.argv:
+        extensions = []
+        builders = dict()
+        sys.argv.remove('--libxc-cmake-build')
     exec(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "pylibxc/version.py")).read())
     setup(
         name='pylibxc',
@@ -91,8 +97,8 @@ if __name__ == "__main__":
             'pytest-cov',
         ],
         packages=find_packages(),
-        ext_modules=[CMakeExtension('pylibxc.libxc')],
-        cmdclass=dict(build_ext=CMakeBuild),
+        ext_modules=extensions,
+        cmdclass=builders,
         classifiers=[
             'Development Status :: 4 - Beta',
             'Intended Audience :: Science/Research',
