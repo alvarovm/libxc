@@ -34,6 +34,7 @@ option_with_default(NAMESPACE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_
 option_with_print(ENABLE_GENERIC "Enable mostly static linking in shared library" OFF)
 option_with_print(ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
 option_with_print(ENABLE_PYTHON "Install Python API interface" OFF)
+option_with_print(INSTALL_PYTHON_HOME "Install Python API interface to user home directory" OFF)
 
 # GCC appears to be catching -xHost as "-x Host" which breaks the detection
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
@@ -581,10 +582,15 @@ if(ENABLE_FORTRAN)
 endif()
 
 if(ENABLE_PYTHON)
-  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR INSTALL_PYTHON_HOME)
     cmake_minimum_required(VERSION 3.12)
     find_package(Python COMPONENTS Interpreter REQUIRED)
-    install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m pip install ${CMAKE_CURRENT_SOURCE_DIR} --install-option=--libxc-cmake-build)")
+    set(HOME_FLAG)
+    if(INSTALL_PYTHON_HOME)
+      set(HOME_FLAG "--user")
+    endif()
+    install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m pip install ${CMAKE_CURRENT_SOURCE_DIR} ${HOME_FLAG} --install-option=--libxc-cmake-build)")
+    unset(HOME_FLAG)
   else()
     set(SOURCE_PYTHON_API
       pylibxc/__init__.py
