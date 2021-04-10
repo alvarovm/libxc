@@ -584,7 +584,7 @@ if(ENABLE_PYTHON)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     cmake_minimum_required(VERSION 3.12)
     find_package(Python COMPONENTS Interpreter REQUIRED)
-    install(CODE "${Python_EXECUTABLE} -m pip install ${CMAKE_CURRENT_SOURCE_DIR} --install-option='--libxc-cmake-build'")
+    install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m pip install ${CMAKE_CURRENT_SOURCE_DIR} --install-option=--libxc-cmake-build)")
   else()
     set(SOURCE_PYTHON_API
       pylibxc/__init__.py
