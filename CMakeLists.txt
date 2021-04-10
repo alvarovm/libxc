@@ -603,7 +603,7 @@ if(ENABLE_PYTHON)
     )
     install(
       FILES ${SOURCE_PYTHON_API}
-      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/pylibxc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pylibxc
     )
   endif()
 endif()
