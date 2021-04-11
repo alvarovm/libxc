@@ -35,6 +35,9 @@ option_with_print(ENABLE_GENERIC "Enable mostly static linking in shared library
 option_with_print(ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
 option_with_print(ENABLE_PYTHON "Install Python API interface" OFF)
 option_with_print(INSTALL_PYTHON_HOME "Install Python API interface to user home directory" OFF)
+if((${BUILD_SHARED_LIBS}) AND NOT ${ENABLE_PYTHON})
+  message(FATAL_ERROR "ENABLE_PYTHON ON requires BUILD_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
+endif()
 
 # GCC appears to be catching -xHost as "-x Host" which breaks the detection
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
