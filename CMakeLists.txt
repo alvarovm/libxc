@@ -608,6 +608,9 @@ if(ENABLE_PYTHON)
       FILES ${SOURCE_PYTHON_API}
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pylibxc
     )
+    if(UNIX)
+      install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${${PROJECT_NAME}_SOMAJOR} ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pylibxc/libxc.so)")
+    endif()
   endif()
 endif()
 
