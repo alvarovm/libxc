@@ -36,7 +36,7 @@ option_with_print(ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
 option_with_print(ENABLE_PYTHON "Install Python API interface" OFF)
 option_with_print(INSTALL_PYTHON_HOME "Install Python API interface into user home directory (--user)" OFF)
 option_with_print(TARGET_PYTHON_DIRECTORY "Install Python API into TARGET_PYTHON_DIRECTORY (--target)" "")
-if((${BUILD_SHARED_LIBS}) AND NOT ${ENABLE_PYTHON})
+if(${ENABLE_PYTHON} AND NOT ${BUILD_SHARED_LIBS})
   message(FATAL_ERROR "ENABLE_PYTHON ON requires BUILD_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
 endif()
 
