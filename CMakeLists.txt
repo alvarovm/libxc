@@ -592,7 +592,10 @@ if(ENABLE_PYTHON)
     if(INSTALL_PYTHON_HOME)
       set(USER_HOME_FLAG "--user")
     endif()
-    install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m pip install ${CMAKE_CURRENT_SOURCE_DIR} ${USER_HOME_FLAG} --install-option=--libxc-cmake-build)")
+    install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m \
+                  pip install ${CMAKE_CURRENT_SOURCE_DIR} \
+                  ${USER_HOME_FLAG} \
+                  --install-option=--libxc-cmake-build)")
     unset(USER_HOME_FLAG)
   else()
     set(SOURCE_PYTHON_API
@@ -609,7 +612,9 @@ if(ENABLE_PYTHON)
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pylibxc
     )
     if(UNIX)
-      install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${${PROJECT_NAME}_SOMAJOR} ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pylibxc/libxc.so)")
+      install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \
+        ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${${PROJECT_NAME}_SOMAJOR} \
+        ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pylibxc/libxc.so)")
     endif()
   endif()
 endif()
