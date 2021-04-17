@@ -34,7 +34,8 @@ option_with_default(NAMESPACE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_
 option_with_print(ENABLE_GENERIC "Enable mostly static linking in shared library" OFF)
 option_with_print(ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
 option_with_print(ENABLE_PYTHON "Install Python API interface" OFF)
-option_with_print(INSTALL_PYTHON_HOME "Install Python API interface to user home directory" OFF)
+option_with_print(INSTALL_PYTHON_HOME "Install Python API interface into user home directory (--user)" OFF)
+option_with_print(TARGET_PYTHON_DIRECTORY "Install Python API into TARGET_PYTHON_DIRECTORY (--target)" "")
 if((${BUILD_SHARED_LIBS}) AND NOT ${ENABLE_PYTHON})
   message(FATAL_ERROR "ENABLE_PYTHON ON requires BUILD_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
 endif()
@@ -585,16 +586,20 @@ if(ENABLE_FORTRAN)
 endif()
 
 if(ENABLE_PYTHON)
-  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR INSTALL_PYTHON_HOME)
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR INSTALL_PYTHON_HOME OR NOT "${TARGET_PYTHON_DIRECTORY}" STREQUAL "")
     cmake_minimum_required(VERSION 3.12)
     find_package(Python COMPONENTS Interpreter REQUIRED)
     set(USER_HOME_FLAG)
+    set(TARGET_PYTHON_DIR)
     if(INSTALL_PYTHON_HOME)
       set(USER_HOME_FLAG "--user")
     endif()
+    if(NOT "${TARGET_PYTHON_DIRECTORY}" STREQUAL "")
+      set(TARGET_PYTHON_DIR "--target=${TARGET_PYTHON_DIRECTORY}")
+    endif()
     install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m \
                   pip install ${CMAKE_CURRENT_SOURCE_DIR} \
-                  ${USER_HOME_FLAG} \
+                  ${USER_HOME_FLAG} ${TARGET_PYTHON_DIR} \
                   --install-option=--libxc-cmake-build)")
     unset(USER_HOME_FLAG)
   else()
