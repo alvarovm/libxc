@@ -39,6 +39,15 @@ option_with_print(TARGET_PYTHON_DIRECTORY "Install Python API into TARGET_PYTHON
 if(${ENABLE_PYTHON} AND NOT ${BUILD_SHARED_LIBS})
   message(FATAL_ERROR "ENABLE_PYTHON ON requires BUILD_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
 endif()
+if(${INSTALL_PYTHON_HOME} AND NOT ${ENABLE_PYTHON})
+  message(FATAL_ERROR "INSTALL_PYTHON_HOME ON requires ENABLE_PYTHON ON")
+endif()
+if(NOT ${TARGET_PYTHON_DIRECTORY} STREQUAL "" AND NOT ${ENABLE_PYTHON})
+  message(FATAL_ERROR "TARGET_PYTHON_DIRECTORY requires ENABLE_PYTHON ON")
+endif()
+if(NOT ${TARGET_PYTHON_DIRECTORY} STREQUAL "" AND ${INSTALL_PYTHON_HOME})
+  message(FATAL_ERROR "TARGET_PYTHON_DIRECTORY (--target) conflicts with INSTALL_PYTHON_HOME (--user)")
+endif()
 
 # GCC appears to be catching -xHost as "-x Host" which breaks the detection
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
