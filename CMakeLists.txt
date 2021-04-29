@@ -34,19 +34,8 @@ option_with_default(NAMESPACE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_
 option_with_print(ENABLE_GENERIC "Enable mostly static linking in shared library" OFF)
 option_with_print(ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
 option_with_print(ENABLE_PYTHON "Install Python API interface" OFF)
-option_with_print(INSTALL_PYTHON_HOME "Install Python API interface into user home directory (--user)" OFF)
-option_with_default(TARGET_PYTHON_DIRECTORY "Install Python API into TARGET_PYTHON_DIRECTORY (--target)" "?")
 if(${ENABLE_PYTHON} AND NOT ${BUILD_SHARED_LIBS})
   message(FATAL_ERROR "ENABLE_PYTHON ON requires BUILD_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
-endif()
-if(${INSTALL_PYTHON_HOME} AND NOT ${ENABLE_PYTHON})
-  message(FATAL_ERROR "INSTALL_PYTHON_HOME ON requires ENABLE_PYTHON ON")
-endif()
-if(NOT ${TARGET_PYTHON_DIRECTORY} STREQUAL "?" AND NOT ${ENABLE_PYTHON})
-  message(FATAL_ERROR "TARGET_PYTHON_DIRECTORY requires ENABLE_PYTHON ON")
-endif()
-if(NOT ${TARGET_PYTHON_DIRECTORY} STREQUAL "?" AND ${INSTALL_PYTHON_HOME})
-  message(FATAL_ERROR "TARGET_PYTHON_DIRECTORY (--target) conflicts with INSTALL_PYTHON_HOME (--user)")
 endif()
 
 # GCC appears to be catching -xHost as "-x Host" which breaks the detection
@@ -595,42 +584,23 @@ if(ENABLE_FORTRAN)
 endif()
 
 if(ENABLE_PYTHON)
-  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR INSTALL_PYTHON_HOME OR NOT "${TARGET_PYTHON_DIRECTORY}" STREQUAL "?")
-    cmake_minimum_required(VERSION 3.12)
-    find_package(Python COMPONENTS Interpreter REQUIRED)
-    set(USER_HOME_FLAG)
-    set(TARGET_PYTHON_DIR)
-    if(INSTALL_PYTHON_HOME)
-      set(USER_HOME_FLAG "--user")
-    endif()
-    if(NOT "${TARGET_PYTHON_DIRECTORY}" STREQUAL "?")
-      set(TARGET_PYTHON_DIR "--target=${TARGET_PYTHON_DIRECTORY}")
-    endif()
-    install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m \
-                  pip install ${CMAKE_CURRENT_SOURCE_DIR} \
-                  ${USER_HOME_FLAG} ${TARGET_PYTHON_DIR} \
-                  --install-option=--libxc-cmake-build)")
-    unset(USER_HOME_FLAG)
-    unset(TARGET_PYTHON_DIR)
-  else()
-    set(SOURCE_PYTHON_API
-      pylibxc/__init__.py
-      pylibxc/core.py
-      pylibxc/flags.py
-      pylibxc/functional.py
-      pylibxc/structs.py
-      pylibxc/util.py
-      pylibxc/version.py
-    )
-    install(
-      FILES ${SOURCE_PYTHON_API}
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pylibxc
-    )
-    if(UNIX)
-      install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \
-        ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${${PROJECT_NAME}_SOMAJOR} \
-        ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pylibxc/libxc.so)")
-    endif()
+  set(SOURCE_PYTHON_API
+    pylibxc/__init__.py
+    pylibxc/core.py
+    pylibxc/flags.py
+    pylibxc/functional.py
+    pylibxc/structs.py
+    pylibxc/util.py
+    pylibxc/version.py
+  )
+  install(
+    FILES ${SOURCE_PYTHON_API}
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pylibxc
+  )
+  if(UNIX)
+    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \
+      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${${PROJECT_NAME}_SOMAJOR} \
+      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pylibxc/libxc.so)")
   endif()
 endif()
 
