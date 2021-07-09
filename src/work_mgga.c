@@ -42,11 +42,13 @@ work_mgga(const XC(func_type) *p, size_t np,
 {
 
   int order = -1;
+#ifndef HAVE_CUDA
   size_t ip;
   double dens;
   double my_rho[2]={0.0, 0.0};
   double my_sigma[3]={0.0, 0.0, 0.0};
   double my_tau[2]={0.0, 0.0};
+#endif
 
   if(zk     != NULL) order = 0;
   if(vrho   != NULL) order = 1;
