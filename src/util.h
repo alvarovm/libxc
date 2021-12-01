@@ -213,19 +213,6 @@ typedef struct xc_functional_key_t {
 #define MU_PBE         0.2195149727645171 /* mu = beta*pi^2/3, beta = 0.06672455060314922 */
 #define X2S            0.1282782438530421943003109254455883701296     /* 1/(2*(6*pi^2)^(1/3))  */
 #define X2S_2D         0.1410473958869390717370198628901931464610     /* 1/(2*(4*pi)^(1/2))    */
-#define FZETAFACTOR    0.5198420997897463295344212145564567011405     /* 2^(4/3) - 2           */
-
-#define RS(x)          (RS_FACTOR/CBRT(x))
-#define FZETA(x)       ((pow(1.0 + (x),  4.0/3.0) + pow(1.0 - (x),  4.0/3.0) - 2.0)/FZETAFACTOR)
-#define DFZETA(x)      ((CBRT(1.0 + (x)) - CBRT(1.0 - (x)))*(4.0/3.0)/FZETAFACTOR)
-#define D2FZETA(x)     ((4.0/9.0)/FZETAFACTOR)* \
-  (fabs(x)==1.0 ? (FLT_MAX) : (pow(1.0 + (x), -2.0/3.0) + pow(1.0 - (x), -2.0/3.0)))
-#define D3FZETA(x)     (-(8.0/27.0)/FZETAFACTOR)* \
-  (fabs(x)==1.0 ? (FLT_MAX) : (pow(1.0 + (x), -5.0/3.0) - pow(1.0 - (x), -5.0/3.0)))
-
-
-/* The following inlines confuse the xlc compiler */
-GPU_FUNCTION void xc_rho2dzeta(int nspin, const double *rho, double *d, double *zeta);
 
 /* Functions to handle the internal counters */
 
@@ -297,26 +284,29 @@ void xc_mix_func
    double *zk MGGA_OUT_PARAMS_NO_EXC(XC_COMMA double *, ));
 
 /* Hybrid functional intializers. The order of arguments is the same
-   as in the external parameter setters.
- */
+   as in the external parameter setters. */
+#define VDW_DF1_ZAB    (-0.8491) /* Zab that is used in the vdw_df1 functional of Dion2004_246401 */
+#define VDW_D1_ALPHA   23.0      /* Value used in the vdw_d1 functional of Grimme2004_1463 */
+#define VDW_D2_ALPHA   20.0      /* Value used in the vdw_d2 functional of Grimme2006_1787 */
+
 void xc_hyb_init(xc_func_type *p, int n_terms, const int *type, const double *coeff, const double *omega);
-void xc_hyb_init_hybrid(xc_func_type *p, double alpha);
+void xc_hyb_init_fock(xc_func_type *p, double alpha);
 void xc_hyb_init_sr  (xc_func_type *p, double beta, double omega);
 void xc_hyb_init_cam (xc_func_type *p, double alpha, double beta, double omega);
 void xc_hyb_init_camy(xc_func_type *p, double alpha, double beta, double omega);
 void xc_hyb_init_camg(xc_func_type *p, double alpha, double beta, double omega);
+void xc_hyb_init_vdw_d   (xc_func_type *p, int type, double s6, double alpha, double r0);
+void xc_hyb_init_vdw_df  (xc_func_type *p, double delta, double Zab);
+void xc_hyb_init_vdw_vv10(xc_func_type *p, double b, double C);
 
 /* Some useful functions */
 const char *get_kind(const xc_func_type *func);
 const char *get_family(const xc_func_type *func);
 double get_ext_param(const xc_func_type *func, const double *values, int index);
-void set_ext_params_cpy  (xc_func_type *p, const double *ext_params);
-void set_ext_params_cpy_omega(xc_func_type *p, const double *ext_params);
+void set_ext_params_cpy    (xc_func_type *p, const double *ext_params);
 void set_ext_params_cpy_exx(xc_func_type *p, const double *ext_params);
 void set_ext_params_cpy_cam(xc_func_type *p, const double *ext_params);
-void set_ext_params_cpy_camy(xc_func_type *p, const double *ext_params);
-void set_ext_params_cpy_cam_sr(xc_func_type *p, const double *ext_params);
-void set_ext_params_cpy_lc(xc_func_type *p, const double *ext_params);
+void set_ext_params_cpy_sr (xc_func_type *p, const double *ext_params);
 
 GPU_FUNCTION
 double xc_mgga_x_br89_get_x(double Q);

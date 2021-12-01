@@ -149,7 +149,7 @@ mgga_x_m06l_init(xc_func_type *p)
   case(XC_HYB_MGGA_X_M06):
   case(XC_HYB_MGGA_X_M06_HF):
   case(XC_HYB_MGGA_X_REVM06):
-    xc_hyb_init_hybrid(p, 0.0);
+    xc_hyb_init_fock(p, 0.0);
     break;
 
   case(XC_HYB_MGGA_X_M06_SX):
@@ -253,7 +253,7 @@ const xc_func_info_type xc_func_info_hyb_mgga_x_m06_sx = {
   {&xc_ref_Wang2020_2294, NULL, NULL, NULL, NULL},
   XC_FLAGS_3D | XC_FLAGS_NEEDS_TAU | MAPLE2C_FLAGS,
   1e-15,
-  {N_PAR_SR, sr_names, sr_desc, par_m06_sx, set_ext_params_cpy_cam_sr},
+  {N_PAR_SR, sr_names, sr_desc, par_m06_sx, set_ext_params_cpy_sr},
   mgga_x_m06l_init, NULL,
   NULL, NULL, work_mgga
 };

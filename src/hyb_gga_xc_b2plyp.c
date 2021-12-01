@@ -20,35 +20,29 @@ static const double b2plyp_values[N_PAR]   = {0.53, 0.27};
 static const double b2gpplyp_values[N_PAR] = {0.65, 0.36};
 
 static void
-b2plyp_set_ext_params(xc_func_type *p, const double *ext_params)
-{
-  double ax, c;
-
-  assert(p != NULL);
-  ax = get_ext_param(p, ext_params, 0);
-  c  = get_ext_param(p, ext_params, 1);
-
-  p->mix_coef[0] = 1.0 - ax;
-  p->mix_coef[1] = 1.0 - c;
-
-  p->hyb_coeff[0] = ax;
-  p->hyb_coeff[1] = c;
-}
-
-static void
 hyb_gga_xc_b2plyp_init(xc_func_type *p)
 {
   static int   funcs_id  [2] = {XC_GGA_X_B88, XC_GGA_C_LYP};
   static double funcs_coef[2] = {0.0, 0.0};
 
-  int hyb_type[2]     = {XC_HYB_FOCK, XC_HYB_PT2};
-  double hyb_omega[2] = {0.0, 0.0};
-  double hyb_coeff[2] = {0.0, 0.0};
-
   /* Note that the values of funcs_coef and hyb_coeff will be set
       by set_ext_params */
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init(p, 2, hyb_type, hyb_coeff, hyb_omega);
+
+  p->hyb_number_terms = 2;
+  p->hyb_type[0] = XC_HYB_FOCK;
+  p->hyb_type[1] = XC_HYB_PT2;
+}
+
+static void
+b2plyp_set_ext_params(xc_func_type *p, const double *ext_params)
+{
+  assert(p != NULL);
+  p->hyb_params[0].fock.alpha = get_ext_param(p, ext_params, 0);
+  p->hyb_params[1].pt2.gamma = get_ext_param(p, ext_params, 1);
+
+  p->mix_coef[0] = 1.0 - p->hyb_params[0].fock.alpha;
+  p->mix_coef[1] = 1.0 - p->hyb_params[1].pt2.gamma;
 }
 
 
@@ -92,6 +86,22 @@ static const double wb2plyp_values[N_PARW]   = {0.53, 0.27, 0.30};
 static const double wb2gpplyp_values[N_PARW] = {0.65, 0.36, 0.27};
 
 static void
+hyb_gga_xc_wb2plyp_init(xc_func_type *p)
+{
+  static int   funcs_id  [2] = {XC_GGA_X_ITYH, XC_GGA_C_LYP};
+  static double funcs_coef[2] = {0.0, 0.0};
+
+  /* Note that the values of funcs_coef and hyb_coeff will be set
+      by set_ext_params */
+  xc_mix_init(p, 2, funcs_id, funcs_coef);
+
+  p->hyb_number_terms = 3;
+  p->hyb_type[0] = XC_HYB_FOCK;
+  p->hyb_type[1] = XC_HYB_PT2;
+  p->hyb_type[2] = XC_HYB_ERF_SR;
+}
+
+static void
 wb2plyp_set_ext_params(xc_func_type *p, const double *ext_params)
 {
   double ax, c, omega;
@@ -103,36 +113,16 @@ wb2plyp_set_ext_params(xc_func_type *p, const double *ext_params)
 
   /* Range-separation parameter */
   xc_func_set_ext_params_name(p->func_aux[0], "_omega", omega);
-  p->hyb_omega[2] = omega;
+  p->hyb_params[2].sr.omega = omega;
 
   /* Long-range coefficient is always 1 */
-  p->hyb_coeff[0] = 1.0;
-  p->hyb_coeff[1] = c;
-  p->hyb_coeff[2] = ax - 1.0;
-
-  p->hyb_omega[0] = 0.0;
-  p->hyb_omega[1] = 0.0;
-  p->hyb_omega[2] = omega;
+  p->hyb_params[0].fock.alpha = 1.0;
+  p->hyb_params[1].pt2.gamma = c;
+  p->hyb_params[2].sr.beta    = ax - 1.0;
 
   /* Mixing coefficients */
   p->mix_coef[0] = 1.0 - ax;
   p->mix_coef[1] = 1.0 - c;
-}
-
-static void
-hyb_gga_xc_wb2plyp_init(xc_func_type *p)
-{
-  static int   funcs_id  [2] = {XC_GGA_X_ITYH, XC_GGA_C_LYP};
-  static double funcs_coef[2] = {0.0, 0.0};
-
-  int hyb_type[3]     = {XC_HYB_FOCK, XC_HYB_PT2, XC_HYB_ERF_SR};
-  double hyb_omega[3] = {0.0, 0.0, 0.0};
-  double hyb_coeff[3] = {0.0, 0.0, 0.0};
-
-  /* Note that the values of funcs_coef and hyb_coeff will be set
-      by set_ext_params */
-  xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init(p, 3, hyb_type, hyb_coeff, hyb_omega);
 }
 
 #ifdef __cplusplus

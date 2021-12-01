@@ -13,6 +13,13 @@
 
 #include <xc.h>
 
+func_reference_type xc_ref_Csonka2008_888 = {
+  "G. I. Csonka, A. Ruzsinszky, J. P. Perdew, and S. Grimme, J. Chem. Theory Comput. 4, 888 (2008)",
+  "10.1021/ct800003n",
+  "@article{Csonka2008_888,\n  author = {Csonka, {G\\'abor} I. and Ruzsinszky, Adrienn and Perdew, John P. and Grimme, Stefan},\n  title = {Improved Description of Stereoelectronic Effects in Hydrocarbons Using Semilocal Density Functional Theory},\n  journal = {J. Chem. Theory Comput.},\n  volume = {4},\n  number = {6},\n  pages = {888-891},\n  year = {2008},\n  doi = {10.1021/ct800003n},\n  URL = {https://doi.org/10.1021/ct800003n}\n}"
+};
+
+
 func_reference_type xc_ref_Acharya1980_6978 = {
   "P. K. Acharya, L. J. Bartolotti, S. B. Sears, and R. G. Parr, Proc. Natl. Acad. Sci. U. S. A. 77, 6978 (1980)",
   "10.1073/pnas.77.12.6978",
@@ -370,6 +377,13 @@ func_reference_type xc_ref_Caldeira2019_62 = {
 };
 
 
+func_reference_type xc_ref_Caldeweyher2019_154122 = {
+  "E. Caldeweyher, S. Ehlert, A. Hansen, H. Neugebauer, S. Spicher, C. Bannwarth, and S. Grimme, J. Chem. Phys. 150, 154122 (2019)",
+  "10.1063/1.5090222",
+  "@article{Caldeweyher2019_154122,\n  author = {Caldeweyher,Eike  and Ehlert,Sebastian  and Hansen,Andreas  and Neugebauer,Hagen  and Spicher,Sebastian  and Bannwarth,Christoph  and Grimme,Stefan },\n  title = {A generally applicable atomic-charge dependent London dispersion correction},\n  journal = {J. Chem. Phys.},\n  volume = {150},\n  number = {15},\n  pages = {154122},\n  year = {2019},\n  doi = {10.1063/1.5090222},\n  URL = {https://doi.org/10.1063/1.5090222},\n}"
+};
+
+
 func_reference_type xc_ref_Campi1978_263 = {
   "X. Campi and A. Bouyssy, Phys. Lett. B 73, 263 (1978)",
   "10.1016/0370-2693(78)90509-9",
@@ -647,6 +661,13 @@ func_reference_type xc_ref_DePristo1987_438 = {
   "A. E. DePristo and J. D. Kress, Phys. Rev. A 35, 438 (1987)",
   "10.1103/PhysRevA.35.438",
   "@article{DePristo1987_438,\n  title = {Kinetic-energy functionals via Pad\\'{e} approximations},\n  author = {A. E. DePristo and J. D. Kress},\n  journal = {Phys. Rev. A},\n  volume = {35},\n  issue = {1},\n  pages = {438},\n  year = {1987},\n  month = {Jan},\n  publisher = {American Physical Society},\n  doi = {10.1103/PhysRevA.35.438},\n  url = {http://link.aps.org/doi/10.1103/PhysRevA.35.438}\n}"
+};
+
+
+func_reference_type xc_ref_Dion2004_246401 = {
+  "M. Dion, H. Rydberg, E. Schroder, D. C. Langreth, and B. I. Lundqvist, Phys. Rev. Lett. 92, 246401 (2004)",
+  "10.1103/PhysRevLett.92.246401",
+  "@article{Dion2004_246401,\n  title = {Van der Waals Density Functional for General Geometries},\n  author = {Dion, M. and Rydberg, H. and Schr\\\"oder, E. and Langreth, D. C. and Lundqvist, B. I.},\n  journal = {Phys. Rev. Lett.},\n  volume = {92},\n  issue = {24},\n  pages = {246401},\n  numpages = {4},\n  year = {2004},\n  month = {Jun},\n  publisher = {American Physical Society},\n  doi = {10.1103/PhysRevLett.92.246401},\n  url = {https://link.aps.org/doi/10.1103/PhysRevLett.92.246401}\n}"
 };
 
 
@@ -934,6 +955,13 @@ func_reference_type xc_ref_Gordon1972_3122 = {
   "R. G. Gordon and Y. S. Kim, J. Chem. Phys. 56, 3122 (1972)",
   "10.1063/1.1677649",
   "@article{Gordon1972_3122,\n  author = {Roy G. Gordon and Yung Sik Kim},\n  title = {Theory for the Forces between Closed-Shell Atoms and Molecules},\n  journal = {J. Chem. Phys.},\n  volume = {56},\n  number = {6},\n  pages = {3122-3133},\n  year = {1972},\n  doi = {10.1063/1.1677649},\n  url = {https://doi.org/10.1063/1.1677649}\n}"
+};
+
+
+func_reference_type xc_ref_Grimme2004_1463 = {
+  "S. Grimme, J. Comput. Chem. 25, 1463 (2004)",
+  "https://doi.org/10.1002/jcc.20078",
+  "@article{Grimme2004_1463,\n  author = {Grimme, Stefan},\n  title = {Accurate description of van der Waals complexes by density functional theory including empirical corrections},\n  journal = {J. Comput. Chem.},\n  volume = {25},\n  number = {12},\n  pages = {1463-1473},\n  doi = {https://doi.org/10.1002/jcc.20078},\n  url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/jcc.20078},\n  year = {2004}\n}"
 };
 
 
@@ -1354,6 +1382,13 @@ func_reference_type xc_ref_Kurth1999_889 = {
   "S. Kurth, J. P. Perdew, and P. Blaha, Int. J. Quantum Chem. 75, 889 (1999)",
   "10.1002/(SICI)1097-461X(1999)75:4/5<889::AID-QUA54>3.0.CO;2-8",
   "@article{Kurth1999_889,\n  author = {Kurth, Stefan and Perdew, John P. and Blaha, Peter},\n  title = {Molecular and solid-state tests of density functional approximations: LSD, GGAs, and meta-GGAs},\n  journal = {Int. J. Quantum Chem.},\n  volume = {75},\n  number = {4-5},\n  pages = {889-909},\n  doi = {10.1002/(SICI)1097-461X(1999)75:4/5<889::AID-QUA54>3.0.CO;2-8},\n  url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/%28SICI%291097-461X%281999%2975%3A4/5%3C889%3A%3AAID-QUA54%3E3.0.CO%3B2-8},\n  year = {1999}\n}"
+};
+
+
+func_reference_type xc_ref_Kyuho2010_081101 = {
+  "K. Lee, E. D. Murray, L. Kong, B. I. Lundqvist, and D. C. Langreth, Phys. Rev. B 82, 081101 (2010)",
+  "10.1103/PhysRevB.82.081101",
+  "@article{Kyuho2010_081101,\n  title = {Higher-accuracy van der Waals density functional},\n  author = {Lee, Kyuho and Murray, \\'Eamonn D. and Kong, Lingzhu and Lundqvist, Bengt I. and Langreth, David C.},\n  journal = {Phys. Rev. B},\n  volume = {82},\n  issue = {8},\n  pages = {081101},\n  numpages = {4},\n  year = {2010},\n  month = {Aug},\n  publisher = {American Physical Society},\n  doi = {10.1103/PhysRevB.82.081101},\n  url = {https://link.aps.org/doi/10.1103/PhysRevB.82.081101}\n}"
 };
 
 

@@ -8,150 +8,208 @@
 
 #include "util.h"
 
-void xc_hyb_init(xc_func_type *p, int n_terms, const int *type,
-                 const double *coeff, const double *omega)
-{
-  int ii;
-
-  p->hyb_number_terms = n_terms;
-
-  p->hyb_type  = (int    *) libxc_malloc(n_terms*sizeof(int));
-  p->hyb_coeff = (double *) libxc_malloc(n_terms*sizeof(double));
-  p->hyb_omega = (double *) libxc_malloc(n_terms*sizeof(double));
-
-  for(ii=0; ii<n_terms; ii++){
-    p->hyb_type[ii]  = type[ii];
-    p->hyb_coeff[ii] = coeff[ii];
-    p->hyb_omega[ii] = omega[ii];
-  }
-}
-
-/* some specializations */
+/* standard hybrid functional that is defined by a single parameter
+   alpha, specifically the coefficient in front of the Fock term */
 void
-xc_hyb_init_hybrid(xc_func_type *p, double alpha)
+xc_hyb_init_fock(xc_func_type *p, double alpha)
 {
-  int    hyb_type[1]  = {XC_HYB_FOCK};
-  double hyb_omega[1] = {0.0};
-  double hyb_coeff[1] = {alpha};
-
-  xc_hyb_init(p, 1, hyb_type, hyb_coeff, hyb_omega);
+  p->hyb_number_terms = 1;
+  
+  p->hyb_type[0] = XC_HYB_FOCK;
+  p->hyb_params[0].fock.alpha = alpha;
 }
 
+/* short-range hybrid. There are two parameters, the coefficient in
+   from of the short-range Foch term, and the screening parameter
+   omega */
 void
 xc_hyb_init_sr(xc_func_type *p, double beta, double omega)
 {
-  int    hyb_type[1]  = {XC_HYB_ERF_SR};
-  double hyb_omega[1] = {omega};
-  double hyb_coeff[1] = {beta};
+  p->hyb_number_terms = 1;
 
-  xc_hyb_init(p, 1, hyb_type, hyb_coeff, hyb_omega);
+  p->hyb_type[0] = XC_HYB_ERF_SR;
+  p->hyb_params[0].sr.beta  = beta;
+  p->hyb_params[0].sr.omega = omega;
 }
 
+/* Coulomb attenuated hybrid, based on the erf attenuation function.
+     N.B. Different conventions for alpha and beta can be found in
+     literature. In the convention used in libxc, at short range the
+     fraction of exact exchange is alpha + beta, while at long range
+     it is alpha. */
 void
 xc_hyb_init_cam(xc_func_type *p, double alpha, double beta, double omega)
 {
-  int hyb_type[2]     = {XC_HYB_ERF_SR, XC_HYB_FOCK};
-  double hyb_omega[2] = {omega, 0.0};
-  double hyb_coeff[2] = {beta, alpha};
+  p->hyb_number_terms = 2;
+  
+  p->hyb_type[0] = XC_HYB_FOCK;
+  p->hyb_params[0].fock.alpha = alpha;
 
-  xc_hyb_init(p, 2, hyb_type, hyb_coeff, hyb_omega);
+  p->hyb_type[1] = XC_HYB_ERF_SR;
+  p->hyb_params[1].sr.beta  = beta;
+  p->hyb_params[1].sr.omega = omega;
 }
 
+/* Coulomb attenuated hybrid, based on the yukawa attenuation
+   function. */
 void
 xc_hyb_init_camy(xc_func_type *p, double alpha, double beta, double omega)
 {
-  int hyb_type[2]     = {XC_HYB_YUKAWA_SR, XC_HYB_FOCK};
-  double hyb_omega[2] = {omega, 0.0};
-  double hyb_coeff[2] = {beta, alpha};
-
-  xc_hyb_init(p, 2, hyb_type, hyb_coeff, hyb_omega);
+  xc_hyb_init_cam(p, alpha, beta, omega);
+  
+  p->hyb_type[0] = XC_HYB_YUKAWA_SR;
 }
 
+/* Coulomb attenuated hybrid, based on the gaussian attenuation
+   function. */
 void
 xc_hyb_init_camg(xc_func_type *p, double alpha, double beta, double omega)
 {
-  int hyb_type[2]     = {XC_HYB_GAUSSIAN_SR, XC_HYB_FOCK};
-  double hyb_omega[2] = {omega, 0.0};
-  double hyb_coeff[2] = {beta, alpha};
-
-  xc_hyb_init(p, 2, hyb_type, hyb_coeff, hyb_omega);
+  xc_hyb_init_cam(p, alpha, beta, omega);
+  
+  p->hyb_type[0] = XC_HYB_GAUSSIAN_SR;
 }
 
-/* checks and returns the type of hybrid function */
-int
-xc_hyb_type(const xc_func_type *p)
+/* van der Waals correction according to Grimme */
+void
+xc_hyb_init_vdw_d(xc_func_type *p, int type, double s6, double alpha, double r0)
 {
-  /* we check several specific types */
-  if(p->hyb_number_terms == 0)
-    return XC_HYB_NONE;
+  p->hyb_number_terms = 1;
 
-  if(p->hyb_number_terms == 1){
-    /* some GGAs are screened and keep omega in this structure */
-    if(p->hyb_type[0] == XC_HYB_NONE)
-      return XC_HYB_SEMILOCAL;
-
-    /* normal hybrid */
-    if(p->hyb_type[0] == XC_HYB_FOCK)
-      return XC_HYB_HYBRID;
-
-    /* range-separated hybrids */
-    if(p->hyb_type[0] == XC_HYB_ERF_SR)
-      return XC_HYB_CAM;
-    if(p->hyb_type[0] == XC_HYB_YUKAWA_SR)
-      return XC_HYB_CAMY;
-    if(p->hyb_type[0] == XC_HYB_GAUSSIAN_SR)
-      return XC_HYB_CAMG;
-  }
-
-  if(p->hyb_number_terms == 2) {
-    if(p->hyb_type[0] == XC_HYB_ERF_SR      && p->hyb_type[1] == XC_HYB_FOCK)
-      return XC_HYB_CAM;
-    if(p->hyb_type[0] == XC_HYB_YUKAWA_SR   && p->hyb_type[1] == XC_HYB_FOCK)
-      return XC_HYB_CAMY;
-    if(p->hyb_type[0] == XC_HYB_GAUSSIAN_SR && p->hyb_type[1] == XC_HYB_FOCK)
-      return XC_HYB_CAMG;
-    if(p->hyb_type[0] == XC_HYB_PT2         && p->hyb_type[1] == XC_HYB_FOCK)
-      return XC_HYB_DOUBLE_HYBRID;
-  }
-
-  return XC_HYB_MIXTURE;
+  p->hyb_type[0] = type;
+  p->hyb_params[0].d.s6    = s6;
+  p->hyb_params[0].d.alpha = alpha;
+  p->hyb_params[0].d.r0    = r0;
 }
 
+/* van der Waals correction according to Dion2004_246401. One
+   parameter only: Zab */
+void
+xc_hyb_init_vdw_df(xc_func_type *p, double delta, double Zab)
+{
+  p->hyb_number_terms = 1;
+
+  p->hyb_type[0] = XC_HYB_VDW_DF;
+  p->hyb_params[0].df.delta = delta;
+  p->hyb_params[0].df.Zab   = Zab;
+}
+
+/* van der Waals correction according to Vydrov2010_244103. Two
+   parameters, b and C */
+void
+xc_hyb_init_vdw_vv10(xc_func_type *p, double b, double C)
+{
+  p->hyb_number_terms = 1;
+
+  p->hyb_type[0] = XC_HYB_VDW_VV10;
+
+  p->hyb_params[0].vv10.b     = b;
+  p->hyb_params[0].vv10.C     = C;
+}
+
+/* worker function for the two functions below */
+static int
+xc_hyb_work(const xc_func_type *p, int *is_complicated)
+{
+  /* Initialize return values */
+  int result = 0;
+  *is_complicated = 0;
+  for(int i=0; i < p->hyb_number_terms; i++) {
+    /* Check whether this flag has already been set in the result */
+    if(result & p->hyb_type[i]) {
+      *is_complicated = 1;
+    }
+    result = result | p->hyb_type[i];
+  }
+  return result;
+}
+
+/* checks and returns the type of hybrid function. */
+int
+xc_hyb_type(const xc_func_type *p) {
+  int is_complicated;
+  return xc_hyb_work(p, &is_complicated);
+}
+
+/* checks if hybrid is complicated i.e. it has repeating flags */
+int
+xc_hyb_is_complicated(const xc_func_type *p) {
+  int is_complicated;
+  xc_hyb_work(p, &is_complicated);
+  return is_complicated;
+}
 
 /*------------------------------------------------------*/
 /* returns the mixing coefficient for the hybrid functions */
 double
 xc_hyb_exx_coef(const xc_func_type *p)
 {
+  double cx=0.0;
   assert(p!=NULL);
-  assert(xc_hyb_type(p) == XC_HYB_HYBRID);
 
-  return p->hyb_coeff[0];
+  return p->hyb_params[0].fock.alpha;
 }
 
-/* returns the CAM parameters for screened hybrids */
+/* returns the CAM parameters for (screened) hybrids */
 void
 xc_hyb_cam_coef(const xc_func_type *p, double *omega, double *alpha, double *beta)
 {
-  assert(p!=NULL);
-  assert(xc_hyb_type(p) == XC_HYB_CAM || xc_hyb_type(p) == XC_HYB_CAMY || xc_hyb_type(p) == XC_HYB_CAMG || xc_hyb_type(p) == XC_HYB_HYBRID);
+  /* Flags to check that the functional doesn't have duplicate contributions */
+  int nfock=0;
+  int nrangesep=0;
+  /* Check pointer */
+  assert(p != NULL);
+  /* Initialize */
+  *alpha = 0.0;
+  *beta = 0.0;
+  *omega = 0.0;
 
-  if(p->hyb_number_terms == 1) {
-    if(p->hyb_type[0] == XC_HYB_FOCK) {
-      /* Regular hybrids */
-      *omega = 0.0;
-      *beta = 0.0;
-      *alpha = p->hyb_coeff[0];
-    } else {
-      /* Short-range only hybrid */
-      *omega = p->hyb_omega[0];
-      *beta  = p->hyb_coeff[0];
-      *alpha = 0.0;
+  /* Collect the parameters */
+  for(int i=0;i<p->hyb_number_terms;i++) {
+    switch(p->hyb_type[i]){
+    case XC_HYB_FOCK:
+      *alpha = p->hyb_params[i].fock.alpha;
+      nfock++;
+      break;
+    case XC_HYB_ERF_SR:
+    case XC_HYB_YUKAWA_SR:
+    case XC_HYB_GAUSSIAN_SR:
+      *beta  = p->hyb_params[i].sr.beta;
+      *omega = p->hyb_params[i].sr.omega;
+      nrangesep++;
+      break;
     }
-  } else if(p->hyb_number_terms == 2) {
-    /* Both short- and long-range exact exchange */
-    *omega = p->hyb_omega[0];
-    *beta  = p->hyb_coeff[0];
-    *alpha = p->hyb_coeff[1];
   }
+
+  /* Ensure the functional did not have multiple components of the
+     same type (this case needs to be handled by specialized code in
+     the calling program as xc_hyb_cam_coef is mainly for backwards
+     compatibility) */
+  if(nfock>1) {
+    fprintf(stderr, "Error in xc_hyb_cam_coef: functional contains multiple Fock matrix contributions\n");
+  }
+  if(nrangesep>1) {
+    fprintf(stderr, "Error in xc_hyb_cam_coef: functional contains multiple range-separated contributions\n");
+  }
+}
+
+/* returns the vdw parameters */
+void
+xc_hyb_vdw_df_coef(const xc_func_type *p, double *delta, double *Zab)
+{
+  assert(p!=NULL);
+  assert(p->hyb_type[0] == XC_HYB_VDW_DF);
+
+  *delta = p->hyb_params[0].df.delta;
+  *Zab   = p->hyb_params[0].df.Zab;
+}
+
+void
+xc_hyb_vdw_vv10_coef(const xc_func_type *p, double *b, double *C)
+{
+  assert(p!=NULL);
+  assert(p->hyb_type[0] == XC_HYB_VDW_VV10);
+  
+  *b     = p->hyb_params[0].vv10.b;
+  *C     = p->hyb_params[0].vv10.C;
 }

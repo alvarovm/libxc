@@ -82,7 +82,7 @@ core.xc_func_set_tau_threshold.argtypes   = (_xc_func_p, ctypes.c_double)
 
 
 # Bind computers
-def _build_comute_argtype(num_nd, num_nd_write):
+def _build_compute_argtype(num_nd, num_nd_write):
     """
     Small function to build the correct argtypes for the LibXC computers
     """
@@ -93,31 +93,31 @@ def _build_comute_argtype(num_nd, num_nd_write):
 
 
 # LDA computers
-core.xc_lda.argtypes = _build_comute_argtype(1, 5)
-core.xc_lda_exc_vxc.argtypes = _build_comute_argtype(1, 2)
-core.xc_lda_exc.argtypes = _build_comute_argtype(1, 1)
-core.xc_lda_vxc.argtypes = _build_comute_argtype(1, 1)
-core.xc_lda_fxc.argtypes = _build_comute_argtype(1, 1)
-core.xc_lda_kxc.argtypes = _build_comute_argtype(1, 1)
-core.xc_lda_lxc.argtypes = _build_comute_argtype(1, 1)
+core.xc_lda.argtypes = _build_compute_argtype(1, 5)
+core.xc_lda_exc_vxc.argtypes = _build_compute_argtype(1, 2)
+core.xc_lda_exc.argtypes = _build_compute_argtype(1, 1)
+core.xc_lda_vxc.argtypes = _build_compute_argtype(1, 1)
+core.xc_lda_fxc.argtypes = _build_compute_argtype(1, 1)
+core.xc_lda_kxc.argtypes = _build_compute_argtype(1, 1)
+core.xc_lda_lxc.argtypes = _build_compute_argtype(1, 1)
 
 # GGA computers
-core.xc_gga.argtypes = _build_comute_argtype(2, 15)
-core.xc_gga_exc_vxc.argtypes = _build_comute_argtype(2, 3)
-core.xc_gga_exc.argtypes = _build_comute_argtype(2, 1)
-core.xc_gga_vxc.argtypes = _build_comute_argtype(2, 2)
-core.xc_gga_fxc.argtypes = _build_comute_argtype(2, 3)
-core.xc_gga_kxc.argtypes = _build_comute_argtype(2, 4)
-core.xc_gga_lxc.argtypes = _build_comute_argtype(2, 5)
+core.xc_gga.argtypes = _build_compute_argtype(2, 15)
+core.xc_gga_exc_vxc.argtypes = _build_compute_argtype(2, 3)
+core.xc_gga_exc.argtypes = _build_compute_argtype(2, 1)
+core.xc_gga_vxc.argtypes = _build_compute_argtype(2, 2)
+core.xc_gga_fxc.argtypes = _build_compute_argtype(2, 3)
+core.xc_gga_kxc.argtypes = _build_compute_argtype(2, 4)
+core.xc_gga_lxc.argtypes = _build_compute_argtype(2, 5)
 
 # MGGA computers
-core.xc_mgga.argtypes = _build_comute_argtype(4, 70)
-core.xc_mgga_exc_vxc.argtypes = _build_comute_argtype(4, 5)
-core.xc_mgga_exc.argtypes = _build_comute_argtype(4, 1)
-core.xc_mgga_vxc.argtypes = _build_comute_argtype(4, 4)
-core.xc_mgga_fxc.argtypes = _build_comute_argtype(4, 10)
-core.xc_mgga_kxc.argtypes = _build_comute_argtype(4, 20)
-core.xc_mgga_kxc.argtypes = _build_comute_argtype(4, 35)
+core.xc_mgga.argtypes = _build_compute_argtype(4, 70)
+core.xc_mgga_exc_vxc.argtypes = _build_compute_argtype(4, 5)
+core.xc_mgga_exc.argtypes = _build_compute_argtype(4, 1)
+core.xc_mgga_vxc.argtypes = _build_compute_argtype(4, 4)
+core.xc_mgga_fxc.argtypes = _build_compute_argtype(4, 10)
+core.xc_mgga_kxc.argtypes = _build_compute_argtype(4, 20)
+core.xc_mgga_kxc.argtypes = _build_compute_argtype(4, 35)
 
 # hybrid functions
 core.xc_hyb_type.argtypes = (_xc_func_p, )
@@ -258,24 +258,13 @@ class LibXCFunctional(object):
 
         # Set omega
         self._hyb_type = core.xc_hyb_type(self.xc_func)
-        if self._hyb_type != flags.XC_HYB_SEMILOCAL:
+        if self._hyb_type != 0:
             self._hyb_types = self.xc_func.contents.hyb_type
-            self._hyb_omega = self.xc_func.contents.hyb_omega
-            self._hyb_coeff = self.xc_func.contents.hyb_coeff
-
-        # VV10
-        self._have_vv10 = self._flags & flags.XC_FLAGS_VV10
-        self._nlc_b = self._nlc_C = False
-        if self._have_vv10:
-            self._nlc_b = self.xc_func.contents.nlc_b
-            self._nlc_C = self.xc_func.contents.nlc_C
+            self._hyb_params = self.xc_func.contents.hyb_params
 
         # Stable
         self._stable = self._flags & flags.XC_FLAGS_STABLE
         self._dev = self._flags & flags.XC_FLAGS_DEVELOPMENT
-
-        # Laplacian
-        self._dev = self._flags & flags.XC_FLAGS_NEEDS_LAPLACIAN
 
         # Pull out references
         self._refs = []
@@ -390,7 +379,7 @@ class LibXCFunctional(object):
         Returns the amount of global exchange to include.
         """
 
-        if self._hyb_type != flags.XC_HYB_HYBRID:
+        if self._hyb_type != flags.XC_HYB_FOCK:
             raise ValueError("get_hyb_exx_coeff can only be called on Hybrid functionals.")
 
         return self._hyb_coeff[0]
@@ -405,15 +394,6 @@ class LibXCFunctional(object):
 
         return (self._hyb_omega[0], self._hyb_coeff[1], self._hyb_coeff[0])
 
-    def get_vv10_coef(self):
-        """
-        Returns the VV10 (b, C) coefficients
-        """
-
-        if self._nlc_b is False:
-            raise ValueError("get_vv10_coeff can only be called on -V functionals.")
-
-        return (self._nlc_b, self._nlc_C)
 
     ### Setters
 

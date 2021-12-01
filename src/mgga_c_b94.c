@@ -63,7 +63,7 @@ hyb_mgga_xc_b94_hyb_init(xc_func_type *p)
   static double funcs_coef[2] = {0.0, 0.0}; /* set by ext_params */
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 static void
@@ -87,7 +87,7 @@ hyb_mgga_xc_b94_hyb_set_ext_params(xc_func_type *p, const double *ext_params)
   p->mix_coef[0] = 1.0 - cx;
   p->mix_coef[1] = 1.0;
 
-  p->hyb_coeff[0] = cx;
+  p->hyb_params[0].fock.alpha = cx;
 }
 
 

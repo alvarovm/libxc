@@ -29,16 +29,8 @@ static const char  *desc[N_PAR]  = {
 static void
 set_ext_params(xc_func_type *p, const double *ext_params)
 {
-  double cx;
-
-  assert(p != NULL);
-
-  cx = get_ext_param(p, ext_params, 0);
-
-  p->mix_coef[0] = 1-cx;
-
-  p->hyb_coeff[0] = cx;
-  p->hyb_omega[0] = 0.0;
+  set_ext_params_cpy_exx(p, ext_params);
+  p->mix_coef[0] = 1 - p->hyb_params[0].fock.alpha;
 }
 
 static const double par_b1wc[N_PAR] = {0.16};
@@ -55,7 +47,7 @@ xc_hyb_gga_xc_b1wc_init(xc_func_type *p)
   static double funcs_coef[2] = {1.0, 1.0};
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -82,7 +74,7 @@ xc_hyb_gga_xc_b1lyp_init(xc_func_type *p)
   static double funcs_coef[2] = {1.0, 1.0};
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -108,7 +100,7 @@ xc_hyb_gga_xc_b1pw91_init(xc_func_type *p)
   static double funcs_coef[2] = {1.0, 1.0};
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -151,7 +143,7 @@ xc_hyb_gga_xc_mpw1pw_init(xc_func_type *p)
   }
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -210,7 +202,7 @@ xc_hyb_gga_xc_mpw1k_init(xc_func_type *p)
   static double funcs_coef[2] = {1.0, 1.0};
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -237,7 +229,7 @@ xc_hyb_gga_xc_bhandh_init(xc_func_type *p)
   static double funcs_coef[2] = {1.0, 1.0};
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -264,7 +256,7 @@ xc_hyb_gga_xc_bhandhlyp_init(xc_func_type *p)
   static double funcs_coef[2] = {1.0, 1.0};
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -291,7 +283,7 @@ xc_hyb_gga_xc_blyp35_init(xc_func_type *p)
   static double funcs_coef[2] = {1.0, 1.0};
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -318,7 +310,7 @@ xc_hyb_gga_xc_mpwlyp1m_init(xc_func_type *p)
   static double funcs_coef[2] = {1.0, 1.0};
 
   xc_mix_init(p, 2, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus

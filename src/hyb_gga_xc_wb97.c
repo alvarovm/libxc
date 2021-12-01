@@ -8,14 +8,16 @@
 
 #include "util.h"
 
-#define XC_HYB_GGA_XC_WB97     463 /* Chai and Head-Gordon                     */
-#define XC_HYB_GGA_XC_WB97X    464 /* Chai and Head-Gordon                     */
-#define XC_HYB_GGA_XC_WB97X_V  466 /* Mardirossian and Head-Gordon             */
-#define XC_HYB_GGA_XC_WB97X_D  471 /* Chai and Head-Gordon                     */
-#define XC_HYB_GGA_XC_WB97X_D3 399 /* Lin et al                                */
+#define XC_HYB_GGA_XC_WB97      463 /* Chai and Head-Gordon             */
+#define XC_HYB_GGA_XC_WB97X     464 /* Chai and Head-Gordon             */
+#define XC_HYB_GGA_XC_WB97X_V   466 /* Mardirossian and Head-Gordon     */
+#define XC_HYB_GGA_XC_WB97X_D   471 /* Chai and Head-Gordon             */
+#define XC_HYB_GGA_XC_WB97X_D3  399 /* Lin et al                        */
+#define XC_HYB_GGA_XC_B97_DSTAR 733 /* omega->0 limit of WB97X_D        */
 
 typedef struct {
   double c_x[5], c_ss[5], c_ab[5];
+  double omega;
 } gga_xc_wb97_params;
 
 #define N_PAR 18
@@ -73,6 +75,13 @@ static const double par_wb97x_d[N_PAR] = {
    1.0, -(1.0 - 2.22036e-01), 0.2
 };
 
+static const double par_b97star[N_PAR] = {
+   7.77964e-01,  6.61160e-01,  5.74541e-01, -5.25671e+00,  1.16386e+01,
+   1.00000e+00, -6.90539e+00,  3.13343e+01, -5.10533e+01,  2.64423e+01,
+   1.00000e+00,  1.79413e+00, -1.20477e+01,  1.40847e+01, -8.50809e+00,
+   1.0, -(1.0 - 2.22036e-01), 0.0
+};
+
 static const double par_wb97x_d3[N_PAR] = {
   0.804272,  0.698900,   0.508940,  -3.744903, 10.060790,
   1.000000, -4.868902,  21.295726, -36.020866, 19.177018,
@@ -87,12 +96,31 @@ gga_xc_wb97_init(xc_func_type *p)
   p->params = libxc_malloc(sizeof(gga_xc_wb97_params));
   xc_hyb_init_cam(p, 0.0, 0.0, 0.0);
   
-  switch(p->info->number){
-  case XC_HYB_GGA_XC_WB97X_V:
-    p->nlc_b = 6.0;
-    p->nlc_C = 0.01;
-    break;
+  /* this particular functionals has an extra vdw component */
+  if(p->info->number == XC_HYB_GGA_XC_WB97X_D || p->info->number == XC_HYB_GGA_XC_B97_DSTAR){
+    p->hyb_number_terms = 3;
+    p->hyb_type[2] = XC_HYB_VDW_WB97;
+    p->hyb_params[2].wb97.delta = 1.0;
+    p->hyb_params[2].wb97.a     = 6.0;
   }
+  
+  if(p->info->number ==  XC_HYB_GGA_XC_WB97X_V){
+    p->hyb_number_terms = 3;
+    p->hyb_type[2] = XC_HYB_VDW_VV10;
+    p->hyb_params[2].vv10.b     = 6.0;
+    p->hyb_params[2].vv10.C     = 0.01;
+  }
+}
+
+static void
+gga_xc_wb97_set_ext_params(xc_func_type *p,  const double *ext_params)
+{
+  gga_xc_wb97_params *params;
+
+  set_ext_params_cpy_cam(p, ext_params);
+
+  params = (gga_xc_wb97_params *) (p->params);
+  params->omega = p->hyb_params[1].sr.omega;
 }
 
 #include "decl_gga.h"
@@ -110,7 +138,7 @@ const xc_func_info_type xc_func_info_hyb_gga_xc_wb97 = {
   {&xc_ref_Chai2008_084106, NULL, NULL, NULL, NULL},
   XC_FLAGS_3D | MAPLE2C_FLAGS,
   1e-14,
-  {N_PAR, names, desc, par_wb97, set_ext_params_cpy_cam},
+  {N_PAR, names, desc, par_wb97, gga_xc_wb97_set_ext_params},
   gga_xc_wb97_init, NULL,
   NULL, work_gga, NULL
 };
@@ -126,7 +154,7 @@ const xc_func_info_type xc_func_info_hyb_gga_xc_wb97x = {
   {&xc_ref_Chai2008_084106, NULL, NULL, NULL, NULL},
   XC_FLAGS_3D | MAPLE2C_FLAGS,
   1e-14,
-  {N_PAR, names, desc, par_wb97x, set_ext_params_cpy_cam},
+  {N_PAR, names, desc, par_wb97x, gga_xc_wb97_set_ext_params},
   gga_xc_wb97_init, NULL,
   NULL, work_gga, NULL
 };
@@ -140,9 +168,9 @@ const xc_func_info_type xc_func_info_hyb_gga_xc_wb97x_v = {
   "wB97X-V range-separated functional",
   XC_FAMILY_GGA,
   {&xc_ref_Mardirossian2014_9904, NULL, NULL, NULL, NULL},
-  XC_FLAGS_3D | XC_FLAGS_VV10 | MAPLE2C_FLAGS,
+  XC_FLAGS_3D | MAPLE2C_FLAGS,
   1e-14,
-  {N_PAR, names, desc, par_wb97x_v, set_ext_params_cpy_cam},
+  {N_PAR, names, desc, par_wb97x_v, gga_xc_wb97_set_ext_params},
   gga_xc_wb97_init, NULL,
   NULL, work_gga, NULL
 };
@@ -158,7 +186,23 @@ const xc_func_info_type xc_func_info_hyb_gga_xc_wb97x_d = {
   {&xc_ref_Chai2008_6615, NULL, NULL, NULL, NULL},
   XC_FLAGS_3D | MAPLE2C_FLAGS,
   1e-14,
-  {N_PAR, names, desc, par_wb97x_d, set_ext_params_cpy_cam},
+  {N_PAR, names, desc, par_wb97x_d, gga_xc_wb97_set_ext_params},
+  gga_xc_wb97_init, NULL,
+  NULL, work_gga, NULL
+};
+
+#ifdef __cplusplus
+extern "C"
+#endif
+const xc_func_info_type xc_func_info_hyb_gga_xc_b97_dstar = {
+  XC_HYB_GGA_XC_B97_DSTAR,
+  XC_EXCHANGE_CORRELATION,
+  "omega->0 limit of WB97X_D",
+  XC_FAMILY_GGA,
+  {&xc_ref_Chai2008_6615, NULL, NULL, NULL, NULL},
+  XC_FLAGS_3D | MAPLE2C_FLAGS,
+  1e-14,
+  {N_PAR, names, desc, par_wb97x_d, gga_xc_wb97_set_ext_params},
   gga_xc_wb97_init, NULL,
   NULL, work_gga, NULL
 };
@@ -174,7 +218,7 @@ const xc_func_info_type xc_func_info_hyb_gga_xc_wb97x_d3 = {
   {&xc_ref_Lin2013_263, NULL, NULL, NULL, NULL},
   XC_FLAGS_3D | MAPLE2C_FLAGS,
   1e-14,
-  {N_PAR, names, desc, par_wb97x_d3, set_ext_params_cpy_cam},
+  {N_PAR, names, desc, par_wb97x_d3, gga_xc_wb97_set_ext_params},
   gga_xc_wb97_init, NULL,
   NULL, work_gga, NULL
 };

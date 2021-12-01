@@ -70,7 +70,7 @@ const xc_func_info_type xc_func_info_mgga_x_revscan = {
 };
 
 typedef struct{
-  double exx;
+  double alpha;
 } hyb_mgga_x_scan0_params;
 
 #define N_PAR_SCAN0 1
@@ -78,17 +78,6 @@ static const char *scan0_names[N_PAR_SCAN0] = {"_exx"};
 static const char *scan0_desc[N_PAR_SCAN0] = {"fraction of exact exchange"};
 
 static const double scan0_pars[N_PAR_SCAN0] = {0.25};
-
-static void
-scan0_set_ext_params(xc_func_type *p, const double *ext_params)
-{
-  double a0;
-  assert(p != NULL);
-  a0 = get_ext_param(p, ext_params, 0);
-
-  p->mix_coef[0] = 1.0 - a0;
-  p->hyb_coeff[0] = a0;
-}
 
 static void
 hyb_mgga_x_scan0_init(xc_func_type *p)
@@ -100,7 +89,15 @@ hyb_mgga_x_scan0_init(xc_func_type *p)
   static double funcs_coef[1] = {0.0}; /* set by ext_params */
 
   xc_mix_init(p, 1, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0); /* set by ext_params */
+  xc_hyb_init_fock(p, 0.0); /* set by ext_params */
+}
+
+static void
+scan0_set_ext_params(xc_func_type *p, const double *ext_params)
+{
+  set_ext_params_cpy_exx(p, ext_params);
+
+  p->mix_coef[0] = 1.0 - p->hyb_params[0].fock.alpha;
 }
 
 #ifdef __cplusplus
@@ -129,7 +126,7 @@ hyb_mgga_x_revscan0_init(xc_func_type *p)
   static double funcs_coef[1] = {0.0}; /* set by ext_params */
 
   xc_mix_init(p, 1, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0); /* set by ext_params */
+  xc_hyb_init_fock(p, 0.0); /* set by ext_params */
 }
 
 #ifdef __cplusplus

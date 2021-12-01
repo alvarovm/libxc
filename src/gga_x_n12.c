@@ -16,6 +16,7 @@
 
 typedef struct{
   double CC[4][4];
+  double beta, omega; /* only used in sx functional */
 } gga_x_n12_params;
 
 #define N_PAR_PURE 16
@@ -62,12 +63,23 @@ static const double par_gam[N_PAR_PURE] = {
 static void
 gga_x_n12_init(xc_func_type *p)
 {
-  assert(p != NULL);
-  assert(p->params == NULL);
+  assert(p != NULL && p->params == NULL);
   p->params = libxc_malloc(sizeof(gga_x_n12_params));
 
   if(p->info->number == XC_HYB_GGA_X_N12_SX)
     xc_hyb_init_sr(p, 0.0, 0.0);
+}
+
+static void
+gga_x_n12_sx_set_params(xc_func_type *p, const double *ext_params)
+{
+  gga_x_n12_params *params;
+
+  set_ext_params_cpy(p, ext_params);
+
+  params = (gga_x_n12_params * )(p->params);
+  p->hyb_params[0].sr.beta = params->beta;
+  p->hyb_params[0].sr.omega = params->omega;
 }
 
 #include "decl_gga.h"
@@ -101,7 +113,7 @@ const xc_func_info_type xc_func_info_hyb_gga_x_n12_sx = {
   {&xc_ref_Peverati2012_16187, NULL, NULL, NULL, NULL},
   XC_FLAGS_3D | MAPLE2C_FLAGS,
   1e-14,
-  {N_PAR_SX, sx_names, sx_desc, par_n12_sx, set_ext_params_cpy_cam_sr},
+  {N_PAR_SX, sx_names, sx_desc, par_n12_sx, gga_x_n12_sx_set_params},
   gga_x_n12_init, NULL,
   NULL, work_gga, NULL
 };

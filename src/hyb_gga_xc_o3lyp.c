@@ -43,7 +43,7 @@ o3lyp_set_ext_params(xc_func_type *p, const double *ext_params)
   p->mix_coef[2] = 1.0 - clyp;
   p->mix_coef[3] = clyp;
 
-  p->hyb_coeff[0] = a;
+  p->hyb_params[0].fock.alpha = a;
 }
 
 static void
@@ -52,7 +52,7 @@ hyb_gga_xc_o3lyp_init(xc_func_type *p)
   static int funcs_id[4] = {XC_LDA_X, XC_GGA_X_OPTX, XC_LDA_C_VWN, XC_GGA_C_LYP};
   double funcs_coef[4] = {0.0, 0.0, 0.0, 0.0};
   xc_mix_init(p, 4, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus
@@ -102,7 +102,7 @@ x3lyp_set_ext_params(xc_func_type *p, const double *ext_params)
   p->mix_coef[3] = 1.0 - ac;
   p->mix_coef[4] = ac;
 
-  p->hyb_coeff[0] = a0;
+  p->hyb_params[0].fock.alpha = a0;
 }
 
 static void
@@ -112,7 +112,7 @@ hyb_gga_xc_x3lyp_init(xc_func_type *p)
   double funcs_coef[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 
   xc_mix_init(p, 5, funcs_id, funcs_coef);
-  xc_hyb_init_hybrid(p, 0.0);
+  xc_hyb_init_fock(p, 0.0);
 }
 
 #ifdef __cplusplus

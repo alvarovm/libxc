@@ -41,8 +41,6 @@ const char *xc_version_string();
 #define XC_FAMILY_LDA           1
 #define XC_FAMILY_GGA           2
 #define XC_FAMILY_MGGA          4
-#define XC_FAMILY_LCA           8
-#define XC_FAMILY_OEP          16
 
 /* flags that can be used in info.flags. Don't reorder these since it
    will break the ABI of the library. */
@@ -54,7 +52,6 @@ const char *xc_version_string();
 #define XC_FLAGS_1D               (1 <<  5) /*    32 */
 #define XC_FLAGS_2D               (1 <<  6) /*    64 */
 #define XC_FLAGS_3D               (1 <<  7) /*   128 */
-#define XC_FLAGS_VV10             (1 << 10) /*  1024 */
 #define XC_FLAGS_STABLE           (1 << 13) /*  8192 */
 /* functionals marked with the development flag may have significant problems in the implementation */
 #define XC_FLAGS_DEVELOPMENT      (1 << 14) /* 16384 */
@@ -76,26 +73,25 @@ const char *xc_version_string();
 
    where the function f(r) is
 
-   *) XC_HYB_FOCK           f(r) = coeff
-   *) XC_HYB_ERF_SR         f(r) = coeff * (1 - erf(omega r))
-   *) XC_HYB_YUKAWA_SR      f(r) = coeff * exp(-omega r)
-   *) XC_HYB_GAUSSIAN_SR    f(r) = coeff * 2*omega/sqrt(pi) * exp(-omega^2 r^2)
+   *) XC_HYB_FOCK           f(r) = alpha
+   *) XC_HYB_ERF_SR         f(r) = beta * (1 - erf(omega r))
+   *) XC_HYB_YUKAWA_SR      f(r) = beta * exp(-omega r)
+   *) XC_HYB_GAUSSIAN_SR    f(r) = beta * 2*omega/sqrt(pi) * exp(-omega^2 r^2)
 */
 #define XC_HYB_NONE             0
 #define XC_HYB_FOCK             1  /* Normal hybrid */
 #define XC_HYB_PT2              2  /* Used for double hybrids */
-#define XC_HYB_ERF_SR           4  /* Short range of range separated - erf version */
-#define XC_HYB_YUKAWA_SR        8  /* Short range of range separated - Yakawa version */
-#define XC_HYB_GAUSSIAN_SR     16  /* Short range of range separated - Gaussian version */
-
-/* Different types of hybrid functionals. */
-#define XC_HYB_SEMILOCAL        0  /* Standard semi-local functional (not a hybrid) */
-#define XC_HYB_HYBRID           1  /* Standard hybrid functional */
-#define XC_HYB_CAM              2  /* Coulomb attenuated hybrid */
-#define XC_HYB_CAMY             3  /* Coulomb attenuated hybrid with a Yukawa screening */
-#define XC_HYB_CAMG             4  /* Coulomb attenuated hybrid with a Gaussian screening */
-#define XC_HYB_DOUBLE_HYBRID    5  /* Double hybrid */
-#define XC_HYB_MIXTURE      32768  /* More complicated mixture (have to check individual terms) */
+#define XC_HYB_RPA              4  /* Used for double hybrids */
+#define XC_HYB_ERF_SR           8  /* Short range of range separated - erf version */
+#define XC_HYB_YUKAWA_SR       16  /* Short range of range separated - Yakawa version */
+#define XC_HYB_GAUSSIAN_SR     32  /* Short range of range separated - Gaussian version */
+#define XC_HYB_VDW_D1          64  /* van der Waals correction of Grimme2004_1463 */
+#define XC_HYB_VDW_D2         128  /* van der Waals correction of Grimme2006_1787 */
+#define XC_HYB_VDW_D3         256  /* van der Waals correction of Grimme2010_154104 */
+#define XC_HYB_VDW_D4         512  /* van der Waals correction of Caldeweyher2019_154122 */
+#define XC_HYB_VDW_DF        1024  /* van der Waals correction of Dion2004_246401 */
+#define XC_HYB_VDW_VV10      2048  /* van der Waals correction of Vydrov2010_244103 */
+#define XC_HYB_VDW_WB97      4096  /* van der Waals correction of Chai2008_6615 */
 
 #define XC_MAX_REFERENCES       5
 
@@ -230,12 +226,24 @@ char const *xc_func_info_get_ext_params_description(const xc_func_info_type *inf
 double xc_func_info_get_ext_params_default_value(const xc_func_info_type *info, int number);
 
 
-struct xc_dimensions{
-  int rho, sigma, lapl, tau;       /* spin dimensions of the arrays */
-  int zk MGGA_OUT_PARAMS_NO_EXC(XC_COMMA, );
-};
+typedef struct {
+  size_t rho, sigma, lapl, tau;       /* spin dimensions of the arrays */
+  size_t zk MGGA_OUT_PARAMS_NO_EXC(XC_COMMA, );
+} xc_dimensions;
 
-typedef struct xc_dimensions xc_dimensions;
+/* These are all possible parameters for the different hybrids that we
+   support. This information should be used by the caller program to
+   setup the extra terms in the energy */
+typedef union {
+  double raw[3]; /* used to access directly the parameters */
+  struct {double alpha;} fock;       /* amount of Fock */
+  struct {double gamma;} pt2;        /* amount of PT2  */
+  struct {double beta, omega;} sr;   /* amount of short-range Fock and screening parameter */
+  struct {double s6, alpha, r0;} d;  /* (minus) amount of non-local term, damping parameter, and scaling of radius */
+  struct {double delta, a;} wb97;    /* (minus) amount of non-local term, damping parameter */
+  struct {double delta, Zab;} df;    /* amount of non-local term and Zab parameter */
+  struct {double b, C;} vv10; /* amount of non-local term and b, C parameters */
+} xc_hybrid_params_type;
 
 
 struct xc_func_type{
@@ -246,23 +254,11 @@ struct xc_func_type{
   struct xc_func_type **func_aux;      /* most GGAs are based on a LDA or other GGAs  */
   double *mix_coef;                    /* coefficients for the mixing */
 
-  /**
-     Parameters for range-separated hybrids
-     hyb_type[i]:  XC_HYB_NONE, XC_HYB_FOCK, XC_HYB_ERF_SR, etc.
-     hyb_omega[i]: the range separation constant
-     hyb_coeff[i]: fraction of exchange, used both for
-                usual hybrids as well as range-separated ones
-
-     N.B. Different conventions for alpha and beta can be found in
-     literature. In the convention used in libxc, at short range the
-     fraction of exact exchange is cam_alpha+cam_beta, while at long
-     range it is cam_alpha.
-  */
-  int hyb_number_terms, *hyb_type;
-  double *hyb_coeff, *hyb_omega;
-
-  double nlc_b;                /* Non-local correlation, b parameter */
-  double nlc_C;                /* Non-local correlation, C parameter */
+  /* Parameters for functional containing external contributions (such
+     as a Fock, PT2, or a VDW term) */
+  int hyb_number_terms;    /* number of external contibutions to the functional (max 5) */
+  int hyb_type[5];         /* type of external contibutions, such as XC_HYB_NONE, XC_HYB_FOCK, etc. */
+  xc_hybrid_params_type hyb_params[5]; /* Parameters defining the external contibution. This depends on the type */
 
   xc_dimensions dim;           /* the dimensions of all input and output arrays */
 
@@ -417,7 +413,8 @@ void xc_mgga_fxc(const xc_func_type *p, size_t np,
 
 #ifndef XC_DONT_COMPILE_KXC
 /** Evaluates the energy density and its first, second, and third derivatives for an     LDA functional */
-void xc_lda_exc_vxc_fxc_kxc (const xc_func_type *p, size_t np, const double *rho, double *zk, double *vrho, double *v2rho2, double *v3rho3);
+void xc_lda_exc_vxc_fxc_kxc (const xc_func_type *p, size_t np, const double *rho,
+                             double *zk, double *vrho, double *v2rho2, double *v3rho3);
 /** Evaluates the energy density and its first, second, and third derivatives for a      GGA functional */
 void xc_gga_exc_vxc_fxc_kxc (const xc_func_type *p, size_t np, const double *rho, const double *sigma,
                              double *zk, double *vrho, double *vsigma, double *v2rho2, double *v2rhosigma, double *v2sigma2,
@@ -440,21 +437,21 @@ void xc_mgga_exc_vxc_fxc_kxc(const xc_func_type *p, size_t np,
 void xc_lda_vxc_fxc_kxc (const xc_func_type *p, size_t np, const double *rho, double *vrho, double *v2rho2, double *v3rho3);
 /** Evaluates the first, second, and third derivatives for a      GGA functional */
 void xc_gga_vxc_fxc_kxc (const xc_func_type *p, size_t np, const double *rho, const double *sigma,
-                             double *vrho, double *vsigma, double *v2rho2, double *v2rhosigma, double *v2sigma2,
-                             double *v3rho3, double *v3rho2sigma, double *v3rhosigma2, double *v3sigma3);
+                         double *vrho, double *vsigma, double *v2rho2, double *v2rhosigma, double *v2sigma2,
+                         double *v3rho3, double *v3rho2sigma, double *v3rhosigma2, double *v3sigma3);
 /** Evaluates the first, second, and third derivatives for a meta-GGA functional */
 void xc_mgga_vxc_fxc_kxc(const xc_func_type *p, size_t np,
-                             const double *rho, const double *sigma, const double *lapl, const double *tau,
-                             double *vrho, double *vsigma, double *vlapl, double *vtau,
-                             double *v2rho2, double *v2rhosigma, double *v2rholapl, double *v2rhotau,
-                             double *v2sigma2, double *v2sigmalapl, double *v2sigmatau, double *v2lapl2,
-                             double *v2lapltau, double *v2tau2,
-                             double *v3rho3, double *v3rho2sigma, double *v3rho2lapl, double *v3rho2tau,
-                             double *v3rhosigma2, double *v3rhosigmalapl, double *v3rhosigmatau,
-                             double *v3rholapl2, double *v3rholapltau, double *v3rhotau2, double *v3sigma3,
-                             double *v3sigma2lapl, double *v3sigma2tau, double *v3sigmalapl2, double *v3sigmalapltau,
-                             double *v3sigmatau2, double *v3lapl3, double *v3lapl2tau, double *v3lapltau2,
-                             double *v3tau3);
+                         const double *rho, const double *sigma, const double *lapl, const double *tau,
+                         double *vrho, double *vsigma, double *vlapl, double *vtau,
+                         double *v2rho2, double *v2rhosigma, double *v2rholapl, double *v2rhotau,
+                         double *v2sigma2, double *v2sigmalapl, double *v2sigmatau, double *v2lapl2,
+                         double *v2lapltau, double *v2tau2,
+                         double *v3rho3, double *v3rho2sigma, double *v3rho2lapl, double *v3rho2tau,
+                         double *v3rhosigma2, double *v3rhosigmalapl, double *v3rhosigmatau,
+                         double *v3rholapl2, double *v3rholapltau, double *v3rhotau2, double *v3sigma3,
+                         double *v3sigma2lapl, double *v3sigma2tau, double *v3sigmalapl2, double *v3sigmalapltau,
+                         double *v3sigmatau2, double *v3lapl3, double *v3lapl2tau, double *v3lapltau2,
+                         double *v3tau3);
 
 /** Evaluates the third derivative for an     LDA functional */
 void xc_lda_kxc (const xc_func_type *p, size_t np, const double *rho, double *v3rho3);
@@ -501,14 +498,28 @@ double xc_gga_ak13_get_asymptotic (double homo);
 double xc_gga_ak13_pars_get_asymptotic (double homo, const double *ext_params);
 
 
-/* Returns the hybrid type of a functional */
+/* Computes the "type" of a functional by bitwise OR of the flags.
+*/
 int xc_hyb_type(const xc_func_type *p);
-/* Returns fraction of Hartree-Fock exchange in a global hybrid functional */
+/* Checks whether the functional features any flag more than once
+   (e.g. two different range separation constants), then the
+   functional is complicated and the return value != 0. Otherwise the
+   return value is 0.
+*/
+int xc_hyb_is_complicated(const xc_func_type *p);
+
+/* Returns fraction of Hartree-Fock exchange in a global hybrid
+   functional */
 double xc_hyb_exx_coef(const xc_func_type *p);
-/* Returns fraction of Hartee-Fock exchange and short-range exchange in a range-separated hybrid functional  */
+/* Returns fraction of Hartee-Fock exchange and short-range exchange
+   in a range-separated hybrid functional */
 void xc_hyb_cam_coef(const xc_func_type *p, double *omega, double *alpha, double *beta);
-/* Returns the b and C coefficients for a non-local VV10 correlation kernel */
-void xc_nlc_coef(const xc_func_type *p, double *nlc_b, double *nlc_C);
+/* Returns the Zab coefficients for a non-local DF correlation
+   kernel */
+void xc_hyb_vdw_df_coef(const xc_func_type *p, double *delta, double *Zab);
+/* Returns the b and C coefficients for a non-local VV10 correlation
+   kernel */
+void xc_hyb_vdw_vv10_coef(const xc_func_type *p, double *b, double *C);
 
 #ifdef __cplusplus
 }
