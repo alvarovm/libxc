@@ -581,6 +581,11 @@
 #define  XC_MGGA_X_R4SCAN                  650 /* r^4SCAN| a functional that satisfies the same exact constraints that SCAN does */
 #define  XC_MGGA_X_VCML                    651 /* Exchange part of VCML-rVV10 by Trepte and Voss */
 #define  XC_MGGA_XC_VCML_RVV10             652 /* VCML-rVV10 by Trepte and Voss */
+#define  XC_HYB_LDA_X_ERF                  653 /* Hybrid Exchange functional with short-range LDA exchange (erf) */
+#define  XC_LDA_C_PW_ERF                   654 /* Short ranged correlation LDA (erfc) */
+#define  XC_GGA_X_PBE_ERF_GWS              655 /* Short ranged PBE exchange (erfc) */
+#define  XC_GGA_C_PBE_ERF_GWS              656 /* Short ranged PBE correlation (erfc) */
+#define  XC_HYB_GGA_X_PBE_ERF_GWS          656 /* Short-range PBE (GWS) exchange (erfc) + long-range exact exchange */
 #define  XC_HYB_GGA_XC_CAM_PBEH            681 /* CAM hybrid screened exchange PBE version */
 #define  XC_HYB_GGA_XC_CAMY_PBEH           682 /* CAMY hybrid screened exchange PBE version */
 #define  XC_LDA_C_UPW92                    683 /* Ruggeri| Rios| and Alavi unrestricted fit */
