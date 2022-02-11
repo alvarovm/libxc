@@ -201,7 +201,7 @@ xc_mgga_evaluate_functional(const xc_func_type *func, size_t np,
     lda_out.v2rho2 = v2rho2;
     lda_out.v3rho3 = v3rho3;
     lda_out.v4rho4 = v4rho4;
-    xc_lda(func, order, np, rho, &lda_out);
+    xc_lda_new(func, order, np, rho, &lda_out);
     break;
   case XC_FAMILY_GGA:
     libxc_memset(&gga_out, 0, sizeof(xc_gga_out_params));
@@ -210,7 +210,7 @@ xc_mgga_evaluate_functional(const xc_func_type *func, size_t np,
     gga_out.v2rho2 = v2rho2; gga_out.v2rhosigma = v2rhosigma; gga_out.v2sigma2 = v2sigma2;
     gga_out.v3rho3 = v3rho3; gga_out.v3rho2sigma = v3rho2sigma; gga_out.v3rhosigma2 = v3rhosigma2; gga_out.v3sigma3 = v3sigma3;
     gga_out.v4rho4 = v4rho4; gga_out.v4rho3sigma = v4rho3sigma; gga_out.v4rho2sigma2 = v4rho2sigma2; gga_out.v4rhosigma3 = v4rhosigma3; gga_out.v4sigma4 = v4sigma4;
-    xc_gga(func, order, np, rho, sigma, &gga_out);
+    xc_gga_new(func, order, np, rho, sigma, &gga_out);
     break;
   case XC_FAMILY_MGGA:
     xc_mgga(func, np, rho, sigma, lapl, tau,

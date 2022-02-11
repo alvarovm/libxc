@@ -102,16 +102,16 @@ const char *xc_version_string();
 /* This are the derivatives that a functional returns */
 #define XC_NOARG
 #define XC_COMMA ,
-  
+
 /* the following macros *do not* include zk */
 /* the following macros are probably to DELETE */
-  
+
 #define LDA_OUT_PARAMS_NO_EXC(P1_, P2_) \
   P1_ P2_ ## vrho   \
   P1_ P2_ ## v2rho2 \
   P1_ P2_ ## v3rho3 \
-  P1_ P2_ ## v4rho4 
-  
+  P1_ P2_ ## v4rho4
+
 #define GGA_OUT_PARAMS_NO_EXC(P1_, P2_) \
   P1_ P2_ ## vrho         P1_ P2_ ## vsigma       \
   P1_ P2_ ## v2rho2       P1_ P2_ ## v2rhosigma   \
@@ -369,12 +369,18 @@ double xc_func_get_ext_params_value(const xc_func_type *p, int number);
 #include "xc_funcs.h"
 #include "xc_funcs_removed.h"
 
-/** Evaluate an     LDA functional */
-void xc_lda (const xc_func_type *p, int order, size_t np,
+/** New API */
+void xc_lda_new (const xc_func_type *p, int order, size_t np,
              const double *rho, xc_lda_out_params *out);
-/** Evaluate a      GGA functional */
-void xc_gga (const xc_func_type *p, int order, size_t np,
+void xc_gga_new (const xc_func_type *p, int order, size_t np,
              const double *rho, const double *sigma, xc_gga_out_params *out);
+  
+/** Evaluate an     LDA functional */
+void xc_lda (const xc_func_type *p, size_t np, const double *rho,
+             double *zk LDA_OUT_PARAMS_NO_EXC(XC_COMMA double *, ));
+/** Evaluate a      GGA functional */
+void xc_gga (const xc_func_type *p, size_t np, const double *rho, const double *sigma,
+             double *zk GGA_OUT_PARAMS_NO_EXC(XC_COMMA double *, ));
 /** Evaluate a meta-GGA functional */
 void xc_mgga(const xc_func_type *p, size_t np,
              const double *rho, const double *sigma, const double *lapl_rho, const double *tau,

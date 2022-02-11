@@ -159,8 +159,8 @@ xc_mix_func(const xc_func_type *func, size_t np,
       //       xzk LDA_OUT_PARAMS_NO_EXC(XC_COMMA, x));
       break;
     case XC_FAMILY_GGA:
-      xc_gga(aux, np, rho, sigma,
-             xzk GGA_OUT_PARAMS_NO_EXC(XC_COMMA, x));
+      //xc_gga(aux, np, rho, sigma,
+      //       xzk GGA_OUT_PARAMS_NO_EXC(XC_COMMA, x));
       break;
     case XC_FAMILY_MGGA:
       xc_mgga(aux, np, rho, sigma, lapl, tau,
