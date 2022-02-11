@@ -200,7 +200,7 @@ xc_mgga_evaluate_functional(const xc_func_type *func, size_t np,
     out.v2rho2 = v2rho2;
     out.v3rho3 = v3rho3;
     out.v4rho4 = v4rho4;
-    xc_lda(func, order, np, rho, &out);
+    xc_lda_new(func, order, np, rho, &out);
   }
     break;
   case XC_FAMILY_GGA:
