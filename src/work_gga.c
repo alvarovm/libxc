@@ -14,8 +14,8 @@
 
 /* define auxiliary functions to NULL in case they are not available */
 #if defined(XC_DONT_COMPILE_EXC) || maple2c_order < 0 || defined(XC_NO_EXC)
-static const xc_gga_funcs work_gga_exc_unpol = NULL;
-static const xc_gga_funcs work_gga_exc_pol = NULL;
+#define work_gga_exc_unpol NULL
+#define work_gga_exc_pol NULL
 #else
 #define ORDER_TXT exc
 #define SPIN_TXT  unpol
@@ -28,8 +28,8 @@ static const xc_gga_funcs work_gga_exc_pol = NULL;
 #endif
 
 #if defined(XC_DONT_COMPILE_VXC) || maple2c_order < 1
-static const xc_gga_funcs work_gga_vxc_unpol = NULL;
-static const xc_gga_funcs work_gga_vxc_pol = NULL;
+#define work_gga_vxc_unpol NULL
+#define work_gga_vxc_pol NULL
 #else
 #define ORDER_TXT vxc
 #define SPIN_TXT  unpol
@@ -42,8 +42,8 @@ static const xc_gga_funcs work_gga_vxc_pol = NULL;
 #endif
 
 #if defined(XC_DONT_COMPILE_FXC) || maple2c_order < 2
-static const xc_gga_funcs work_gga_fxc_unpol = NULL;
-static const xc_gga_funcs work_gga_fxc_pol = NULL;
+#define work_gga_fxc_unpol NULL
+#define work_gga_fxc_pol NULL
 #else
 #define ORDER_TXT fxc
 #define SPIN_TXT  unpol
@@ -56,8 +56,8 @@ static const xc_gga_funcs work_gga_fxc_pol = NULL;
 #endif
 
 #if defined(XC_DONT_COMPILE_KXC) || maple2c_order < 3
-static const xc_gga_funcs work_gga_kxc_unpol = NULL;
-static const xc_gga_funcs work_gga_kxc_pol = NULL;
+#define work_gga_kxc_unpol NULL
+#define work_gga_kxc_pol NULL
 #else
 #define ORDER_TXT kxc
 #define SPIN_TXT  unpol
@@ -70,8 +70,8 @@ static const xc_gga_funcs work_gga_kxc_pol = NULL;
 #endif
 
 #if defined(XC_DONT_COMPILE_LXC) || maple2c_order < 4
-static const xc_gga_funcs work_gga_lxc_unpol = NULL;
-static const xc_gga_funcs work_gga_lxc_pol = NULL;
+#define work_gga_lxc_unpol NULL
+#define work_gga_lxc_pol NULL
 #else
 #define ORDER_TXT lxc
 #define SPIN_TXT  unpol
