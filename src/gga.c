@@ -11,7 +11,7 @@
 #include "funcs_gga.c"
 
 /* macro to check is a buffer exists */
-#define check_out_var(VAR) if(out->vsigma == NULL){fprintf(stderr, "out->" #VAR "\n"); exit(1);}
+#define check_out_var(VAR) if(out->VAR == NULL){fprintf(stderr, "error: output variable, out->" #VAR ", is a null pointer\n"); exit(1);}
 
 void
 xc_gga_sanity_check(const xc_func_info_type *info, int order, xc_gga_out_params *out)
