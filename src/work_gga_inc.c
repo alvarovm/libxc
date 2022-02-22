@@ -23,8 +23,8 @@
 #define FUNC_(order, spin)     func_     ## order ## _ ## spin
 
 /* we need double escaping of the preprocessor macros */
-#define WORK_GGA(order, spin) WORK_GGA_(order, spin)
-#define FUNC(order, spin)     FUNC_(order, spin)
+#define WORK_GGA(order, spin)  WORK_GGA_(order, spin)
+#define FUNC(order, spin)      FUNC_(order, spin)
 
 #ifndef HAVE_CUDA
 
@@ -72,9 +72,8 @@ WORK_GGA(ORDER_TXT, SPIN_TXT)
     /* check for NaNs */
 #ifdef XC_DEBUG
     {
-      size_t ii;
       const xc_dimensions *dim = &(p->dim);
-      int is_OK = 1;
+      int ii, is_OK = 1;
 
       if(out->zk != NULL)
         is_OK = is_OK & isfinite(out->VAR(zk, ip, 0));
@@ -90,10 +89,11 @@ WORK_GGA(ORDER_TXT, SPIN_TXT)
         printf("Problem in the evaluation of the functional\n");
         if(p->nspin == XC_UNPOLARIZED){
           printf("./xc-get_data %d 1 %le 0.0 %le 0.0 0.0 0.0 0.0 0.0 0.0\n",
-                 p->info->number, *rho, *sigma);
+                 p->info->number, VAR(rho, ip, 0), VAR(sigma, ip, 0));
         }else{
           printf("./xc-get_data %d 2 %le %le %le %le %le 0.0 0.0 0.0 0.0\n",
-                 p->info->number, rho[0], rho[1], sigma[0], sigma[1], sigma[2]);
+                 p->info->number, VAR(rho, ip, 0), VAR(rho, ip, 1),
+                 VAR(sigma, ip, 0), VAR(sigma, ip, 1), VAR(sigma, ip, 2));
         }
       }
     }
