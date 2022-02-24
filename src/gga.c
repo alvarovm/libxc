@@ -161,15 +161,15 @@ void xc_gga_new(const xc_func_type *func, int order, size_t np, const double *rh
       func->info->gga->pol[order](func, np, rho, sigma, out);
   }
 
-  //if(func->mix_coef != NULL)
-  //  xc_mix_func(func, np, rho, sigma, NULL, NULL, zk, vrho, vsigma, NULL, NULL,
-  //              v2rho2, v2rhosigma, NULL, NULL, v2sigma2, NULL, NULL, NULL, NULL, NULL,
-  //              v3rho3, v3rho2sigma, NULL, NULL, v3rhosigma2, NULL, NULL, NULL, NULL, NULL,
-  //              v3sigma3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  //              v4rho4, v4rho3sigma, NULL, NULL, v4rho2sigma2, NULL, NULL, NULL, NULL, NULL,
-  //              v4rhosigma3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  //              v4sigma4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  //              NULL, NULL, NULL, NULL, NULL);
+  if(func->mix_coef != NULL)
+    xc_mix_func(func, np, rho, sigma, NULL, NULL, out->zk, out->vrho, out->vsigma, NULL, NULL,
+                out->v2rho2, out->v2rhosigma, NULL, NULL, out->v2sigma2, NULL, NULL, NULL, NULL, NULL,
+                out->v3rho3, out->v3rho2sigma, NULL, NULL, out->v3rhosigma2, NULL, NULL, NULL, NULL, NULL,
+                out->v3sigma3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                out->v4rho4, out->v4rho3sigma, NULL, NULL, out->v4rho2sigma2, NULL, NULL, NULL, NULL, NULL,
+                out->v4rhosigma3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                out->v4sigma4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL);
 }
 
 /* old API */
