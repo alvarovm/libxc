@@ -16,7 +16,7 @@
 
 
 #ifndef XC_DONT_COMPILE_EXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_exc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t1, t2, t3, t5, t6, t7, t10, t11;
@@ -141,7 +141,7 @@ func_exc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *
 
 
 #ifndef XC_DONT_COMPILE_VXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_vxc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t1, t2, t3, t5, t6, t7, t10, t11;
@@ -400,7 +400,7 @@ func_vxc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *
 
 
 #ifndef XC_DONT_COMPILE_FXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_fxc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t1, t2, t3, t5, t6, t7, t10, t11;
@@ -959,7 +959,7 @@ func_fxc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *
 
 
 #ifndef XC_DONT_COMPILE_KXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_kxc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t1, t2, t3, t5, t6, t7, t10, t11;
@@ -2189,7 +2189,7 @@ func_kxc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *
 
 
 #ifndef XC_DONT_COMPILE_LXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_lxc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t1, t2, t3, t5, t6, t7, t10, t11;
@@ -4366,7 +4366,7 @@ func_lxc_pol(const xc_func_type *p, size_t ip, const double *rho, const double *
 
 
 #ifndef XC_DONT_COMPILE_EXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_exc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t2, t3, t4, t6, t7, t8, t10, t11;
@@ -4446,7 +4446,7 @@ func_exc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double
 
 
 #ifndef XC_DONT_COMPILE_VXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_vxc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t2, t3, t4, t6, t7, t8, t10, t11;
@@ -4577,7 +4577,7 @@ func_vxc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double
 
 
 #ifndef XC_DONT_COMPILE_FXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_fxc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t2, t3, t4, t6, t7, t8, t10, t11;
@@ -4788,7 +4788,7 @@ func_fxc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double
 
 
 #ifndef XC_DONT_COMPILE_KXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_kxc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t2, t3, t4, t6, t7, t8, t10, t11;
@@ -5131,7 +5131,7 @@ func_kxc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double
 
 
 #ifndef XC_DONT_COMPILE_LXC
-static inline void
+GPU_DEVICE_FUNCTION static inline void
 func_lxc_unpol(const xc_func_type *p, size_t ip, const double *rho, const double *sigma, xc_gga_out_params *out)
 {
   double t2, t3, t4, t6, t7, t8, t10, t11;
