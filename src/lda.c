@@ -53,19 +53,19 @@ xc_lda_initalize(const xc_func_type *func, size_t np, xc_lda_out_params *out)
 
   /* initialize output */
   if(out->zk != NULL)
-    libxc_memset(out->zk,     0, np*sizeof(double)*dim->zk);
+    memset(out->zk,     0, np*sizeof(double)*dim->zk);
 
   if(out->vrho != NULL)
-    libxc_memset(out->vrho,   0, np*sizeof(double)*dim->vrho);
+    memset(out->vrho,   0, np*sizeof(double)*dim->vrho);
 
   if(out->v2rho2 != NULL)
-    libxc_memset(out->v2rho2, 0, np*sizeof(double)*dim->v2rho2);
+    memset(out->v2rho2, 0, np*sizeof(double)*dim->v2rho2);
 
   if(out->v3rho3 != NULL)
-    libxc_memset(out->v3rho3, 0, np*sizeof(double)*dim->v3rho3);
+    memset(out->v3rho3, 0, np*sizeof(double)*dim->v3rho3);
 
   if(out->v4rho4 != NULL)
-    libxc_memset(out->v4rho4, 0, np*sizeof(double)*dim->v4rho4);
+    memset(out->v4rho4, 0, np*sizeof(double)*dim->v4rho4);
 }
 
 
@@ -114,7 +114,7 @@ xc_lda(const xc_func_type *p, size_t np, const double *rho, double *zk, double *
   if(order < 0) return;
 
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.zk     = zk;
   out.vrho   = vrho;
   out.v2rho2 = v2rho2;
@@ -130,7 +130,7 @@ void
 xc_lda_exc(const xc_func_type *p, size_t np, const double *rho, double *zk)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.zk   = zk;
 
   xc_lda_new(p, 0, np, rho, &out);
@@ -140,7 +140,7 @@ void
 xc_lda_exc_vxc(const xc_func_type *p, size_t np, const double *rho, double *zk, double *vrho)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.zk   = zk;
   out.vrho = vrho;
 
@@ -151,7 +151,7 @@ void
 xc_lda_exc_vxc_fxc(const xc_func_type *p, size_t np, const double *rho, double *zk, double *vrho, double *v2rho2)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.zk     = zk;
   out.vrho   = vrho;
   out.v2rho2 = v2rho2;
@@ -163,7 +163,7 @@ void
 xc_lda_vxc_fxc(const xc_func_type *p, size_t np, const double *rho, double *vrho, double *v2rho2)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.vrho   = vrho;
   out.v2rho2 = v2rho2;
 
@@ -174,7 +174,7 @@ void
 xc_lda_exc_vxc_fxc_kxc(const xc_func_type *p, size_t np, const double *rho, double *zk, double *vrho, double *v2rho2, double *v3rho3)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.zk     = zk;
   out.vrho   = vrho;
   out.v2rho2 = v2rho2;
@@ -187,7 +187,7 @@ void
 xc_lda_vxc_fxc_kxc(const xc_func_type *p, size_t np, const double *rho, double *vrho, double *v2rho2, double *v3rho3)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.vrho   = vrho;
   out.v2rho2 = v2rho2;
   out.v3rho3 = v3rho3;
@@ -199,7 +199,7 @@ void
 xc_lda_vxc(const xc_func_type *p, size_t np, const double *rho, double *vrho)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.vrho   = vrho;
 
   xc_lda_new(p, 1, np, rho, &out);
@@ -209,7 +209,7 @@ void
 xc_lda_fxc(const xc_func_type *p, size_t np, const double *rho, double *v2rho2)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.v2rho2 = v2rho2;
 
   xc_lda_new(p, 2, np, rho, &out);
@@ -219,7 +219,7 @@ void
 xc_lda_kxc(const xc_func_type *p, size_t np, const double *rho, double *v3rho3)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.v3rho3 = v3rho3;
 
   xc_lda_new(p, 3, np, rho, &out);
@@ -229,7 +229,7 @@ void
 xc_lda_lxc(const xc_func_type *p, size_t np, const double *rho, double *v4rho4)
 {
   xc_lda_out_params out;
-  libxc_memset(&out, 0, sizeof(xc_lda_out_params));
+  memset(&out, 0, sizeof(xc_lda_out_params));
   out.v4rho4 = v4rho4;
 
   xc_lda_new(p, 4, np, rho, &out);
