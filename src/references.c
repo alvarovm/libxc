@@ -973,12 +973,6 @@ func_reference_type xc_ref_Hodges1973_1428 = {
   "@article{Hodges1973_1428,\n  author = {Hodges, C. H.},\n  title = {Quantum Corrections to the Thomas--Fermi Approximation---The Kirzhnits Method},\n  journal = {Can. J. Phys.},\n  volume = {51},\n  number = {13},\n  pages = {1428-1437},\n  year = {1973},\n  doi = {10.1139/p73-189},\n  url = {https://doi.org/10.1139/p73-189}\n}\n"
 };
 
-func_reference_type xc_ref_Hoe2001_319 = {
-  "W.-M. Hoe, A. J. Cohen, and N. C. Handy.,  Chem. Phys. Lett. 341, 319–328 (2001)",
-  "10.1016/S0009-2614(01)00581-4",
-  "@article{Hoe2001_319,\n  author = {Hoe, Wee-Meng and Cohen, Aron J. and Handy, Nicholas C.},\n  title = {Assessment of a new local exchange functional OPTX},\n  journal = {Chem. Phys. Lett.},\n  volume = {341},\n  number = {3},\n  pages = {319--328},\n  year = {2001},\n  issn = {0009-2614},\n  doi = {10.1016/S0009-2614(01)00581-4},\n  url = {https://www.sciencedirect.com/science/article/pii/S0009261401005814}\n}\n"
-};
-
 func_reference_type xc_ref_Hu1985_391 = {
   "C. D. Hu and D. C. Langreth.,  Phys. Scr. 32, 391 (1985)",
   "10.1088/0031-8949/32/4/024",
@@ -1031,6 +1025,12 @@ func_reference_type xc_ref_Jana2021_063007 = {
   "S. Jana, S. K. Behera, S. Śmiga, L. A. Constantin, and P. Samal.,  New J. Phys. 23, 063007 (2021)",
   "10.1088/1367-2630/abfd4d",
   "@article{Jana2021_063007,\n  author = {Jana, Subrata and Behera, Sushant Kumar and {\\'{S}}miga, Szymon and Constantin, Lucian A. and Samal, Prasanjit},\n  title = {Improving the applicability of the Pauli kinetic energy density based semilocal functional for solids},\n  journal = {New J. Phys.},\n  volume = {23},\n  pages = {063007},\n  year = {2021},\n  month = {apr},\n  publisher = {{IOP} Publishing},\n  doi = {10.1088/1367-2630/abfd4d},\n  url = {https://doi.org/10.1088/1367-2630/abfd4d}\n}\n"
+};
+
+func_reference_type xc_ref_Jaramillo2003_1068 = {
+  "J. Jaramillo, G. E. Scuseria, and M. Ernzerhof.,  J. Chem. Phys. 118, 1068-1073 (2003)",
+  "10.1063/1.1528936",
+  "@article{Jaramillo2003_1068,\n  author = {Jaramillo, Juanita and Scuseria, Gustavo E. and Ernzerhof, Matthias},\n  title = {Local hybrid functionals},\n  journal = {J. Chem. Phys.},\n  volume = {118},\n  number = {3},\n  pages = {1068-1073},\n  year = {2003},\n  doi = {10.1063/1.1528936},\n  URL = {https://doi.org/10.1063/1.1528936}\n}\n"
 };
 
 func_reference_type xc_ref_Jemmer1995_3571 = {
