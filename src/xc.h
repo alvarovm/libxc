@@ -46,6 +46,11 @@ const char *xc_version_string();
 #define XC_FAMILY_LCA           8
 #define XC_FAMILY_OEP          16
 
+#define XC_FUNC_NEEDS_RHO       (1 <<  0) /*     1 */
+#define XC_FUNC_NEEDS_SIGMA     (1 <<  1) /*     2 */
+#define XC_FUNC_NEEDS_LAPLACIAN (1 <<  2) /*     4 */
+#define XC_FUNC_NEEDS_TAU       (1 <<  3) /*     8 */
+
 /* flags that can be used in info.flags. Don't reorder these since it
    will break the ABI of the library. */
 #define XC_FLAGS_HAVE_EXC         (1 <<  0) /*     1 */
@@ -307,6 +312,7 @@ int xc_func_info_get_kind(const xc_func_info_type *info);
 char const *xc_func_info_get_name(const xc_func_info_type *info);
 int xc_func_info_get_family(const xc_func_info_type *info);
 int xc_func_info_get_flags(const xc_func_info_type *info);
+int xc_func_info_get_ingredients(const xc_func_info_type *info);
 const func_reference_type *xc_func_info_get_references(const xc_func_info_type *info, int number);
 
 

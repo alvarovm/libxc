@@ -35,6 +35,12 @@ XC_FLAGS_DEVELOPMENT = (1 << 14)  # 16384
 XC_FLAGS_NEEDS_LAPLACIAN = (1 << 15)  # 32768
 XC_FLAGS_NEEDS_TAU = (1 << 16) # 65536 
 
+# ingredients of functionals
+XC_FUNC_NEEDS_RHO       = (1 << 0) #  1
+XC_FUNC_NEEDS_SIGMA     = (1 << 1) #  2
+XC_FUNC_NEEDS_LAPLACIAN = (1 << 2) #  4
+XC_FUNC_NEEDS_TAU       = (1 << 3) #  8
+
 # possible terms in a hybrid functional
 XC_HYB_NONE = 0
 XC_HYB_FOCK = 1
