@@ -43,7 +43,7 @@ const xc_input_variables_dimensions *input_variables_dimensions_get(int nspin)
   spin:   XC_UNPOLARIZED, XC_POLARIZED
 */
 xc_input_variables *
-xc_input_variables_allocate(double np, int family, int flags, int nspin){
+xc_input_variables_allocate(size_t np, int family, int flags, int nspin){
   xc_input_variables *in;
   int ii;
 
@@ -57,7 +57,7 @@ xc_input_variables_allocate(double np, int family, int flags, int nspin){
   in->dim = input_variables_dimensions_get(nspin);
 
   /* if np == 0 then do not allocate the internal pointers */
-  if (np <= 0)
+  if (np == 0)
     return in;
   in->np = np;
 
@@ -480,7 +480,7 @@ const xc_output_variables_dimensions *output_variables_dimensions_get(int nspin)
   spin:   XC_UNPOLARIZED, XC_POLARIZED
 */
 xc_output_variables *
-xc_output_variables_allocate(double np, const int *orders, int family, int flags, int nspin){
+xc_output_variables_allocate(size_t np, const int *orders, int family, int flags, int nspin){
   xc_output_variables *out;
   int ii;
   
@@ -494,7 +494,7 @@ xc_output_variables_allocate(double np, const int *orders, int family, int flags
   out->dim = output_variables_dimensions_get(nspin);
   
   /* if np == 0 then do not allocate the internal pointers */
-  if (np <= 0)
+  if (np == 0)
     return out;
   out->np = np;
   
