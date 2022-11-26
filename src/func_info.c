@@ -34,6 +34,34 @@ int xc_func_info_get_flags(const xc_func_info_type *info)
   return info->flags;
 }
 
+int xc_func_info_get_ingredients(const xc_func_info_type *info)
+{
+  int result = 0;
+  int family = xc_func_info_get_family(info);
+  int flags = xc_func_info_get_flags(info);
+  switch (family) {
+    case (XC_FAMILY_HGGA):
+      result |= XC_FUNC_NEEDS_EXX;
+    case (XC_FAMILY_MGGA):
+      if (flags & XC_FLAGS_NEEDS_TAU) {
+        result |= XC_FUNC_NEEDS_TAU;
+      }
+      if (flags & XC_FLAGS_NEEDS_LAPLACIAN) {
+        result |= XC_FUNC_NEEDS_LAPLACIAN;
+      }
+    case (XC_FAMILY_GGA):
+      result |= XC_FUNC_NEEDS_SIGMA;
+    case (XC_FAMILY_LDA):
+      result |= XC_FUNC_NEEDS_RHO;
+      break;
+    default:
+      fprintf(stderr, "Unknown family of functional!\n");
+      exit(1);
+      break;
+  }
+  return result;
+}
+
 const func_reference_type *xc_func_info_get_references(const xc_func_info_type *info, int number)
 {
   assert(number >=0 && number < XC_MAX_REFERENCES);

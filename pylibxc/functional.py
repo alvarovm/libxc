@@ -57,6 +57,8 @@ core.xc_func_info_get_family.argtypes = (_xc_func_info_p, )
 
 core.xc_func_info_get_flags.argtypes = (_xc_func_info_p, )
 
+core.xc_func_info_get_ingredients.argtypes = (_xc_func_info_p, )
+
 core.xc_func_info_get_references.argtypes = (_xc_func_info_p, ctypes.c_int)
 core.xc_func_info_get_references.restype = ctypes.POINTER(structs.func_reference_type)
 
@@ -365,6 +367,13 @@ class LibXCFunctional(object):
         """
 
         return self._flags
+
+    def get_ingredients(self):
+        """
+        Returns the LibXCFunctional ingredients.
+        """
+
+        return core.xc_func_info_get_ingredients(self.xc_func_info)
 
     def get_references(self):
         """
