@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   }
 
   /* define and read input variables */
-  in = xc_input_variables_allocate(1, func.info->family, func.info->flags, nspin);
+  in = xc_input_variables_allocate(&func, 1);
   
   /* let us check how many input parameters our functional has */
   for(ninput=0, ii=0; ii<XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++)
@@ -78,10 +78,7 @@ int main(int argc, char *argv[])
   }
   
   /* allocate buffers */
-  out = xc_output_variables_allocate(1, orders,
-                                     func.info->family,
-                                     func.info->flags,
-                                     nspin);
+  out = xc_output_variables_allocate(&func, 1, orders, 0);
   /* xc_output_variables_initialize(out); */
   
   xc_evaluate_func(&func, 2, in, out);

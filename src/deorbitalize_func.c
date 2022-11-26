@@ -24,13 +24,13 @@ void xc_evaluate_func(const xc_func_type *func, int max_order,
     orders[ii] = 0;
 
   /* check if all variables make sense */
-  check = xc_input_variables_sanity_check(in, func->info->family, func->info->flags);
+  check = xc_input_variables_sanity_check(func, in);
   if(check >= 0){ /* error */
     fprintf(stderr, "Field %s is not allocated\n", xc_input_variables_name[check]);
     exit(1);
   }
   
-  check = xc_output_variables_sanity_check(out, orders, func->info->family, func->info->flags);
+  check = xc_output_variables_sanity_check(func, out, orders, 0);
   if(check >= 0){ /* error */
     if(check >= 1000)
       fprintf(stderr, "Functional does not provide an implementation of the %d-th derivative\n", check-1000);
@@ -83,7 +83,7 @@ deorb_work(const xc_func_type *p,
   xc_output_variables *mgga, *ked1, *ked2;
   size_t ip;
   
-  int ii, max_order, flags;
+  int ii, max_order, ext_flags;
   int orders[XC_MAXIMUM_ORDER+1] =
     {out->zk != NULL, out->vrho != NULL, out->v2rho2 != NULL,
      out->v3rho3 != NULL, out->v4rho4 != NULL};
@@ -97,7 +97,7 @@ deorb_work(const xc_func_type *p,
     orders[ii] = 1;
   
   /* prepare buffers for input variables */
-  in2 = xc_input_variables_allocate(-1, XC_FAMILY_MGGA, 0, 0);
+  in2 = xc_input_variables_allocate(p, -1);
   in2->np = in->np;
   
   mtau = (double *) libxc_malloc(in->np*p->inp_dim->tau*sizeof(double));
@@ -112,14 +112,14 @@ deorb_work(const xc_func_type *p,
      we have to declare them as XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU
      as the code accesses these values (even if they are zero)
   */
-  flags = p->info->flags | XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU;
-  mgga = xc_output_variables_allocate(in->np, orders, XC_FAMILY_MGGA, flags, p->nspin);
+  ext_flags = XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU;
+  mgga = xc_output_variables_allocate(p->func_aux[0], in->np, orders, ext_flags);
   xc_output_variables_initialize(mgga);
   
-  ked1 = xc_output_variables_allocate(in->np, orders, XC_FAMILY_MGGA, flags, p->nspin);
+  ked1 = xc_output_variables_allocate(p->func_aux[1], in->np, orders, ext_flags);
   xc_output_variables_initialize(ked1);
   if(p->nspin == XC_POLARIZED){
-    ked2 = xc_output_variables_allocate(in->np, orders, XC_FAMILY_MGGA, flags, p->nspin);
+    ked2 = xc_output_variables_allocate(p->func_aux[1], in->np, orders, ext_flags);
     xc_output_variables_initialize(ked2);
   }
   
@@ -194,6 +194,8 @@ deorb_work(const xc_func_type *p,
   /* clean up */
   xc_output_variables_deallocate(mgga);
   xc_output_variables_deallocate(ked1);
+  for(int i = 0; i < XC_TOTAL_NUMBER_INPUT_VARIABLES; i++)
+    in2->fields[i] = NULL;
   libxc_free(in2);
   libxc_free(mtau);
   if(p->nspin == XC_POLARIZED){

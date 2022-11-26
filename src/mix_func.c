@@ -150,13 +150,13 @@ xc_mix_func(const xc_func_type *func, const xc_input_variables *in, xc_output_va
   mix_func_sanity_check(func);
 
   /* check if all variables make sense */
-  check = xc_input_variables_sanity_check(in, func->info->family, func->info->flags);
+  check = xc_input_variables_sanity_check(func, in);
   if(check >= 0){ /* error */
     fprintf(stderr, "Field %s is not allocated\n", xc_input_variables_name[check]);
     exit(1);
   }
   
-  check = xc_output_variables_sanity_check(out, orders, func->info->family, func->info->flags);
+  check = xc_output_variables_sanity_check(func, out, orders, 0);
   if(check >= 0){ /* error */
     if(check >= 1000)
       fprintf(stderr, "Functional does not provide an implementation of the %d-th derivative\n", check-1000);
@@ -165,8 +165,7 @@ xc_mix_func(const xc_func_type *func, const xc_input_variables *in, xc_output_va
     exit(1);
   }
   
-  xout = xc_output_variables_allocate
-    (in->np, orders, func->info->family, func->info->flags, func->nspin);
+  xout = xc_output_variables_allocate(func, in->np, orders, 0);
 
   /* Proceed by computing the mix */
   for(ifunc=0; ifunc<func->n_func_aux; ifunc++){

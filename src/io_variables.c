@@ -11,39 +11,31 @@
 /* Output variables */
 
 /* mapping input variable -> name */
-const char *xc_input_variables_name[XC_TOTAL_NUMBER_INPUT_VARIABLES] =
-  {"rho", "sigma", "lapl", "tau", "exx"};
+const char *xc_input_variables_name[XC_TOTAL_NUMBER_INPUT_VARIABLES] = {
+    "rho", "sigma", "lapl", "tau", "exx"};
 
-/* mapping input variable -> family */
-const int xc_input_variables_family_key[XC_TOTAL_NUMBER_INPUT_VARIABLES] =
-  {XC_FAMILY_LDA, XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA};
+const int xc_input_variables_needs_key[XC_TOTAL_NUMBER_INPUT_VARIABLES] = {
+    XC_FUNC_NEEDS_RHO, XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_LAPLACIAN,
+    XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_EXX};
 
-/* mapping input variable -> flags */
-const int xc_input_variables_flags_key[XC_TOTAL_NUMBER_INPUT_VARIABLES] =
-  {0, 0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0};
+const xc_input_variables_dimensions input_variables_dimensions_unpolarized = {
+    .fields = {1, 1, 1, 1, 1}};
+const xc_input_variables_dimensions input_variables_dimensions_polarized = {
+    .fields = {2, 3, 2, 2, 2}};
 
-const xc_input_variables_dimensions input_variables_dimensions_unpolarized = 
-  {1, 1, 1, 1, 1};
-const xc_input_variables_dimensions input_variables_dimensions_polarized = 
-  {2, 3, 2, 2, 2};
-
-const xc_input_variables_dimensions *input_variables_dimensions_get(int nspin)
-{
-  if(nspin == XC_UNPOLARIZED)
+const xc_input_variables_dimensions *input_variables_dimensions_get(int nspin) {
+  if (nspin == XC_UNPOLARIZED)
     return &input_variables_dimensions_unpolarized;
   return &input_variables_dimensions_polarized;
 }
 
 /* allocates the input variables on request from the user. The memory
    is not initialized. Input parameters are
+  p:      Functional
   np:     Number of grid points
-  family: Family of functional
-  flags:  Flags of functional. Necessary to know if LAPL or TAU variables should
-          be allocated
-  spin:   XC_UNPOLARIZED, XC_POLARIZED
 */
-xc_input_variables *
-xc_input_variables_allocate(size_t np, int family, int flags, int nspin){
+xc_input_variables *xc_input_variables_allocate(const xc_func_type *func,
+                                                size_t np) {
   xc_input_variables *in;
   int ii;
 
@@ -54,54 +46,34 @@ xc_input_variables_allocate(size_t np, int family, int flags, int nspin){
   libxc_memset(in, 0, sizeof(xc_input_variables));
 
   /* determined spin dimensions */
-  in->dim = input_variables_dimensions_get(nspin);
+  in->dim = input_variables_dimensions_get(func->nspin);
 
   /* if np == 0 then do not allocate the internal pointers */
   if (np == 0)
     return in;
   in->np = np;
 
-  for(ii=0; ii<XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++){
-    if(family < xc_input_variables_family_key[ii])
-      continue;
-
-    if(family >= XC_FAMILY_MGGA){
-      if(! (flags & XC_FLAGS_NEEDS_LAPLACIAN) &&
-         (xc_input_variables_flags_key[ii] & XC_FLAGS_NEEDS_LAPLACIAN))
-        continue;
-      if(! (flags & XC_FLAGS_NEEDS_TAU) &&
-         (xc_input_variables_flags_key[ii] & XC_FLAGS_NEEDS_TAU))
-        continue;
-    }
-    in->fields[ii] = (double *) libxc_malloc(sizeof(double)*np*in->dim->fields[ii]);
+  int ingredients = xc_func_info_get_ingredients(func->info);
+  for (ii = 0; ii < XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++) {
+    if (ingredients & xc_input_variables_needs_key[ii])
+      in->fields[ii] =
+          (double *)libxc_malloc(sizeof(double) * np * in->dim->fields[ii]);
   }
-    
+
   return in;
 }
 
-/* 
+/*
   This function returns -1 if all relevant variables (as determined by
   orders, family, and flags) are allocated, or the number of the first
   unallocated field otherwise.
 */
-int
-xc_input_variables_sanity_check(const xc_input_variables *in, int family, int flags)
-{
-  int ii;
-
-  for(ii=0; ii<XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++){
-    if(family < xc_input_variables_family_key[ii])
-      continue;
-
-    if(family >= XC_FAMILY_MGGA){
-      if(! (flags & XC_FLAGS_NEEDS_LAPLACIAN) &&
-         (xc_input_variables_flags_key[ii] & XC_FLAGS_NEEDS_LAPLACIAN))
-        continue;
-      if(! (flags & XC_FLAGS_NEEDS_TAU) &&
-         (xc_input_variables_flags_key[ii] & XC_FLAGS_NEEDS_TAU))
-        continue;
-    }
-    if(in->fields[ii] == NULL)
+int xc_input_variables_sanity_check(const xc_func_type *func,
+                                    const xc_input_variables *in) {
+  int ingredients = xc_func_info_get_ingredients(func->info);
+  for (int ii = 0; ii < XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++) {
+    if ((ingredients & xc_input_variables_needs_key[ii]) &&
+        (in->fields[ii] == NULL))
       return ii; /* the field ii is not allocated */
   }
 
@@ -109,254 +81,191 @@ xc_input_variables_sanity_check(const xc_input_variables *in, int family, int fl
   return -1;
 }
 
-
-void
-xc_input_variables_deallocate(xc_input_variables *in)
-{
+void xc_input_variables_deallocate(xc_input_variables *in) {
   int ii;
-  
-  for(ii=0; ii<XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++)
-    if(in->fields[ii] != NULL)
+
+  for (ii = 0; ii < XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++)
+    if (in->fields[ii] != NULL)
       libxc_free(in->fields[ii]);
   libxc_free(in);
 }
 
-
-void
-xc_input_variables_initialize(xc_input_variables *in)
-{
+void xc_input_variables_initialize(xc_input_variables *in) {
   int ii;
 
-  for(ii=0; ii<XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++)
-    if(in->fields[ii] != NULL)
-      libxc_memset(in->fields[ii], 0, sizeof(double)*in->np*in->dim->fields[ii]);
+  for (ii = 0; ii < XC_TOTAL_NUMBER_INPUT_VARIABLES; ii++)
+    if (in->fields[ii] != NULL)
+      libxc_memset(in->fields[ii], 0,
+                   sizeof(double) * in->np * in->dim->fields[ii]);
 }
 
-
+// clang-format off
 /* Output variables */
 
 /* mapping output variable -> name */
-const char *xc_output_variables_name[XC_TOTAL_NUMBER_OUTPUT_VARIABLES] =
-  {
-   /* order 0 (1 var) */
-   "zk",    
-   /* order 1 (5 vars) */
-   "vrho", "vsigma", "vlapl", "vtau", "vexx",    
-   /* order 2 (15 vars) */
-   "v2rho2", "v2rhosigma", "v2rholapl", "v2rhotau", "v2rhoexx",
-   "v2sigma2", "v2sigmalapl", "v2sigmatau", "v2sigmaexx",
-   "v2lapl2", "v2lapltau", "v2laplexx",
-   "v2tau2", "v2tauexx",
-   "v2exx2",
-   /* order 3 (35 vars) */
-   "v3rho3", "v3rho2sigma", "v3rho2lapl", "v3rho2tau", "v3rho2exx",
-   "v3rhosigma2", "v3rhosigmalapl", "v3rhosigmatau", "v3rhosigmaexx",
-   "v3rholapl2", "v3rholapltau", "v3rholaplexx",
-   "v3rhotau2", "v3rhotauexx",
-   "v3rhoexx2",
-   "v3sigma3", "v3sigma2lapl", "v3sigma2tau", "v3sigma2exx",
-   "v3sigmalapl2", "v3sigmalapltau", "v3sigmalaplexx",
-   "v3sigmatau2", "v3sigmatauexx",
-   "v3sigmaexx2",
-   "v3lapl3", "v3lapl2tau", "v3lapl2exx",
-   "v3lapltau2", "v3lapltauexx",
-   "v3laplexx2",
-   "v3tau3", "v3tau2exx", "v3tauexx2", "v3exx3", 
-   /* order 4 (68 vars) */
-   "v4rho4", "v4rho3sigma", "v4rho3lapl", "v4rho3tau", "v4rho3exx",
-   "v4rho2sigma2", "v4rho2sigmalapl", "v4rho2sigmatau", "v4rho2sigmaexx",
-   "v4rho2lapl2", "v4rho2lapltau", "v4rho2laplexx",
-   "v4rho2tau2", "v4rho2tauexx",
-   "v4rho2exx2",
-   "v4rhosigma3", "v4rhosigma2lapl", "v4rhosigma2tau", "tv4rhosigma2exx",
-   "v4rhosigmalapl2", "v4rhosigmalapltau", "v4rhosigmalaplexx",
-   "v4rhosigmatau2", "v4rhosigmatauexx",
-   "v4rhosigmaexx2",
-   "v4rholapl3", "v4rholapl2tau", "v4rholapl2exx",
-   "v4rholapltau2", "v4rholapltauexx",
-   "v4rholaplexx2",
-   "v4rhotau3", "v4rhotau2exx", "v4rhoexx3",
-   "v4sigma4", "v4sigma3lapl", "v4sigma3tau", "v4sigma3exx",
-   "v4sigma2lapl2", "v4sigma2lapltau", "v4sigma2laplexx",
-   "v4sigma2tau2", "v4sigma2tauexx",
-   "v4sigma2exx2",
-   "v4sigmalapl3", "v4sigmalapl2tau", "v4sigmalapl2exx",
-   "v4sigmalapltau2", "v4sigmalapltauexx",
-   "v4sigmalaplexx2",
-   "v4sigmatau3", "v4sigmatau2exx", "v4sigmatauexx2", "v4sigmaexx3",
-   "v4lapl4", "v4lapl3tau", "v4lapl3exx",
-   "v4lapl2tau2", "v4lapl2tauexx", "v4lapl2exx2",
-   "v4lapltau3", "v4lapltau2exx", "v4lapltauexx2", "v4laplexx3",
-   "v4tau4", "v4tau3exx", "v4tauexx3", "v4exx4",
-  };
+const char *xc_output_variables_name[XC_TOTAL_NUMBER_OUTPUT_VARIABLES] = {
+  /* order 0 (1 var) */
+  "zk",
+  /* order 1 (5 vars) */
+  "vrho", "vsigma", "vlapl", "vtau", "vexx",
+  /* order 2 (15 vars) */
+  "v2rho2", "v2rhosigma", "v2rholapl", "v2rhotau", "v2rhoexx",
+  "v2sigma2", "v2sigmalapl", "v2sigmatau", "v2sigmaexx",
+  "v2lapl2", "v2lapltau", "v2laplexx",
+  "v2tau2", "v2tauexx",
+  "v2exx2",
+  /* order 3 (35 vars) */
+  "v3rho3", "v3rho2sigma", "v3rho2lapl", "v3rho2tau", "v3rho2exx",
+  "v3rhosigma2", "v3rhosigmalapl", "v3rhosigmatau", "v3rhosigmaexx",
+  "v3rholapl2", "v3rholapltau", "v3rholaplexx",
+  "v3rhotau2", "v3rhotauexx",
+  "v3rhoexx2",
+  "v3sigma3", "v3sigma2lapl", "v3sigma2tau", "v3sigma2exx",
+  "v3sigmalapl2", "v3sigmalapltau", "v3sigmalaplexx",
+  "v3sigmatau2", "v3sigmatauexx",
+  "v3sigmaexx2",
+  "v3lapl3", "v3lapl2tau", "v3lapl2exx",
+  "v3lapltau2", "v3lapltauexx",
+  "v3laplexx2",
+  "v3tau3", "v3tau2exx", "v3tauexx2", "v3exx3",
+  /* order 4 (68 vars) */
+  "v4rho4", "v4rho3sigma", "v4rho3lapl", "v4rho3tau", "v4rho3exx",
+  "v4rho2sigma2", "v4rho2sigmalapl", "v4rho2sigmatau", "v4rho2sigmaexx",
+  "v4rho2lapl2", "v4rho2lapltau", "v4rho2laplexx",
+  "v4rho2tau2", "v4rho2tauexx",
+  "v4rho2exx2",
+  "v4rhosigma3", "v4rhosigma2lapl", "v4rhosigma2tau", "tv4rhosigma2exx",
+  "v4rhosigmalapl2", "v4rhosigmalapltau", "v4rhosigmalaplexx",
+  "v4rhosigmatau2", "v4rhosigmatauexx",
+  "v4rhosigmaexx2",
+  "v4rholapl3", "v4rholapl2tau", "v4rholapl2exx",
+  "v4rholapltau2", "v4rholapltauexx",
+  "v4rholaplexx2",
+  "v4rhotau3", "v4rhotau2exx", "v4rhoexx3",
+  "v4sigma4", "v4sigma3lapl", "v4sigma3tau", "v4sigma3exx",
+  "v4sigma2lapl2", "v4sigma2lapltau", "v4sigma2laplexx",
+  "v4sigma2tau2", "v4sigma2tauexx",
+  "v4sigma2exx2",
+  "v4sigmalapl3", "v4sigmalapl2tau", "v4sigmalapl2exx",
+  "v4sigmalapltau2", "v4sigmalapltauexx",
+  "v4sigmalaplexx2",
+  "v4sigmatau3", "v4sigmatau2exx", "v4sigmatauexx2", "v4sigmaexx3",
+  "v4lapl4", "v4lapl3tau", "v4lapl3exx",
+  "v4lapl2tau2", "v4lapl2tauexx", "v4lapl2exx2",
+  "v4lapltau3", "v4lapltau2exx", "v4lapltauexx2", "v4laplexx3",
+  "v4tau4", "v4tau3exx", "v4tauexx3", "v4exx4",
+};
 
 /* mapping output variable -> order of derivative */
-const int xc_output_variables_order_key[XC_TOTAL_NUMBER_OUTPUT_VARIABLES] =
-  {/* order 0 (1 var) */
-   0,
-   /* order 1 (5 vars) */
-   1, 1, 1, 1, 1,
-   /* order 2 (15 vars) */
-   2, 2, 2, 2, 2,
-   2, 2, 2, 2,
-   2, 2, 2,
-   2, 2,
-   2,
-   /* order 3 (35 vars) */
-   3, 3, 3, 3, 3,
-   3, 3, 3, 3,
-   3, 3, 3,
-   3, 3,
-   3,
-   3, 3, 3, 3,
-   3, 3, 3,
-   3, 3,
-   3,
-   3, 3, 3,
-   3, 3,
-   3,
-   3, 3, 3, 3,
-   /* order 4 (68 vars) */
-   4, 4, 4, 4, 4,
-   4, 4, 4, 4,
-   4, 4, 4,
-   4, 4,
-   4,
-   4, 4, 4, 4,
-   4, 4, 4,
-   4, 4,
-   4,
-   4, 4, 4,
-   4, 4,
-   4,
-   4, 4, 4,
-   4, 4, 4, 4,
-   4, 4, 4,
-   4, 4,
-   4,
-   4, 4, 4,
-   4, 4,
-   4,
-   4, 4, 4, 4,
-   4, 4, 4,
-   4, 4, 4,
-   4, 4, 4, 4,
-   4, 4, 4, 4
-  };
+const int xc_output_variables_order_key[XC_TOTAL_NUMBER_OUTPUT_VARIABLES] = {
+  /* order 0 (1 var) */
+  0,
+  /* order 1 (5 vars) */
+  1, 1, 1, 1, 1,
+  /* order 2 (15 vars) */
+  2, 2, 2, 2, 2,
+  2, 2, 2, 2,
+  2, 2, 2,
+  2, 2,
+  2,
+  /* order 3 (35 vars) */
+  3, 3, 3, 3, 3,
+  3, 3, 3, 3,
+  3, 3, 3,
+  3, 3,
+  3,
+  3, 3, 3, 3,
+  3, 3, 3,
+  3, 3,
+  3,
+  3, 3, 3,
+  3, 3,
+  3,
+  3, 3, 3, 3,
+  /* order 4 (68 vars) */
+  4, 4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4,
+  4, 4,
+  4,
+  4, 4, 4, 4,
+  4, 4, 4,
+  4, 4,
+  4,
+  4, 4, 4,
+  4, 4,
+  4,
+  4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4,
+  4, 4,
+  4,
+  4, 4, 4,
+  4, 4,
+  4,
+  4, 4, 4, 4,
+  4, 4, 4,
+  4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4
+};
 
-/* mapping output variable -> family */
-const int xc_output_variables_family_key[XC_TOTAL_NUMBER_OUTPUT_VARIABLES] =
-  {/* order 0 (1 var) */
-   XC_FAMILY_LDA,
-   /* order 1 (5 vars) */
-   XC_FAMILY_LDA, XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   /* order 2 (15 vars) */
-   XC_FAMILY_LDA, XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   /* order 3 (35 vars) */
-   XC_FAMILY_LDA, XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA,
-   /* order 4 (68 vars) */
-   XC_FAMILY_LDA, XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_GGA, XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_MGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA,
-   XC_FAMILY_MGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA, XC_FAMILY_HGGA
-  };
-
-/* mapping output variable -> flags */
-const int xc_output_variables_flags_key[XC_TOTAL_NUMBER_OUTPUT_VARIABLES] =
-  {/* order 0 (1 var) */
-   0,
-   /* order 1 (5 vars) */
-   0, 0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   /* order 2 (15 vars) */
-   0, 0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU,
-   0,
-   /* order 3 (35 vars) */
-   0, 0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU,
-   0,
-   0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU,
-   0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU,
-   XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU, 0,
-   /* order 4 (68 vars) */
-   0, 0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU,
-   0,
-   0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU,
-   0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU,
-   XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU, 0,
-   0, XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_TAU, 0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU,
-   0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU,
-   XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU, 0,
-   XC_FLAGS_NEEDS_LAPLACIAN, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN | XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_LAPLACIAN,
-   XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU, XC_FLAGS_NEEDS_TAU, 0,
-  };
-
+const int xc_output_variables_needs_key[XC_TOTAL_NUMBER_OUTPUT_VARIABLES] = {
+  /* order 0 ( 1 var ) */
+  0,
+  /* order 1 ( 5 vars) */
+  XC_FUNC_NEEDS_RHO, XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_EXX,
+  /* order 2 (15 vars) */
+  XC_FUNC_NEEDS_RHO, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_EXX,
+  /* order 3 (35 vars) */
+  XC_FUNC_NEEDS_RHO, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_EXX,
+  /* order 4 (68 vars) */
+  XC_FUNC_NEEDS_RHO, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_RHO | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_SIGMA | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_LAPLACIAN, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_LAPLACIAN | XC_FUNC_NEEDS_EXX,
+  XC_FUNC_NEEDS_TAU, XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_TAU | XC_FUNC_NEEDS_EXX, XC_FUNC_NEEDS_EXX
+};
 
 /* these are the dimension of the input and output
    arrays for spin unpolarized and polarized */
-const xc_output_variables_dimensions output_variables_dimensions_unpolarized =
-{
+const xc_output_variables_dimensions output_variables_dimensions_unpolarized = {.fields = {
   /* order 0 */
   1,                /* zk */
   /* order 1 */
@@ -407,10 +316,9 @@ const xc_output_variables_dimensions output_variables_dimensions_unpolarized =
   1, 1, 1,          /* v4lapl2tau2, v4lapl2tauexx, v4lapl2exx2 */
   1, 1, 1, 1,       /* v4lapltau3, v4lapltau2exx, v4lapltauexx2, v4laplexx3 */
   1, 1, 1, 1        /* v4tau4, v4tau3exx, v4tauexx3, v4exx4 */
-};
+}};
 
-const xc_output_variables_dimensions output_variables_dimensions_polarized =
-{
+const xc_output_variables_dimensions output_variables_dimensions_polarized = {.fields = {
   /* order 0 */
   1,                /* zk */
   /* order 1 */
@@ -461,29 +369,31 @@ const xc_output_variables_dimensions output_variables_dimensions_polarized =
   9, 12, 9,         /* v4lapl2tau2, v4lapl2tauexx, v4lapl2exx2 */
   8, 12, 12, 8,     /* v4lapltau3, v4lapltau2exx, v4lapltauexx2, v4laplexx3 */
   5, 8, 8, 5        /* v4tau4, v4tau3exx, v4tauexx3, v4exx4 */
-};
+}};
+// clang-format on
 
-const xc_output_variables_dimensions *output_variables_dimensions_get(int nspin)
-{
-  if(nspin == XC_UNPOLARIZED)
+const xc_output_variables_dimensions *
+output_variables_dimensions_get(int nspin) {
+  if (nspin == XC_UNPOLARIZED)
     return &output_variables_dimensions_unpolarized;
   return &output_variables_dimensions_polarized;
 }
 
-/* allocates the output variables on request from the user. The memory
-   is not initialized. Input parameters are
-  np:     Number of grid points
-  orders: Array size XC_MAXIMUM_ORDER that determines if orders[i] should be allocated
-  family: Family of functional
-  flags:  Flags of functional. Necessary to know if LAPL or TAU variables should
-          be allocated
-  spin:   XC_UNPOLARIZED, XC_POLARIZED
+/* allocates the output variables on request from the user. The memory is not
+   initialized. Input parameters are
+  func:      Functional
+  np:        Number of grid points
+  orders:    Array size XC_MAXIMUM_ORDER that determines if orders[i] should be
+             allocated
+  ext_flags: external flags of functional ingredients. Necessary to know if LAPL
+             or TAU variables should be allocated
 */
-xc_output_variables *
-xc_output_variables_allocate(size_t np, const int *orders, int family, int flags, int nspin){
+xc_output_variables *xc_output_variables_allocate(const xc_func_type *func,
+                                                  size_t np, const int *orders,
+                                                  int ext_flags) {
   xc_output_variables *out;
   int ii;
-  
+
   /* allocate output structure */
   out = (xc_output_variables *)libxc_malloc(sizeof(xc_output_variables));
 
@@ -491,76 +401,54 @@ xc_output_variables_allocate(size_t np, const int *orders, int family, int flags
   libxc_memset(out, 0, sizeof(xc_output_variables));
 
   /* determined spin dimensions */
-  out->dim = output_variables_dimensions_get(nspin);
+  out->dim = output_variables_dimensions_get(func->nspin);
   
   /* if np == 0 then do not allocate the internal pointers */
   if (np == 0)
     return out;
   out->np = np;
   
-  for(ii=0; ii<XC_TOTAL_NUMBER_OUTPUT_VARIABLES; ii++){
-    if(! orders[xc_output_variables_order_key[ii]])
-      continue;
+  int ingredients = xc_func_info_get_ingredients(func->info) | ext_flags;
 
-    if(family < xc_output_variables_family_key[ii])
+  for (ii = 0; ii < XC_TOTAL_NUMBER_OUTPUT_VARIABLES; ii++) {
+    if (!orders[xc_output_variables_order_key[ii]])
       continue;
-
-    if(family >= XC_FAMILY_MGGA){
-      if(! (flags & XC_FLAGS_NEEDS_LAPLACIAN) &&
-         (xc_output_variables_flags_key[ii] & XC_FLAGS_NEEDS_LAPLACIAN))
-        continue;
-      if(! (flags & XC_FLAGS_NEEDS_TAU) &&
-         (xc_output_variables_flags_key[ii] & XC_FLAGS_NEEDS_TAU))
-        continue;
-    }
-    out->fields[ii] = (double *) libxc_malloc(sizeof(double)*out->np*out->dim->fields[ii]);
+    if ((ingredients & xc_output_variables_needs_key[ii]) == xc_output_variables_needs_key[ii])
+      out->fields[ii] = (double *)libxc_malloc(sizeof(double) * out->np *
+                                              out->dim->fields[ii]);
   }
-    
+
   return out;
 }
-  
-/* 
+
+/*
   This function returns -1 if all relevant variables (as determined by
-  orders, family, and flags) are allocated, or the number of the first
+  ingredients and ext_flags) are allocated, or the number of the first
   unallocated field otherwise. It also returns 10000+order if a
   variable was requested that is not available.
 */
-int
-xc_output_variables_sanity_check(const xc_output_variables *out, const int *orders, int family, int flags)
-{
-  int ii;
+int xc_output_variables_sanity_check(const xc_func_type *func,
+                                     const xc_output_variables *out,
+                                     const int *orders, int ext_flags) {
 
-  if(orders[0] && !(flags & XC_FLAGS_HAVE_EXC))
+  int flags = xc_func_info_get_flags(func->info);
+  if (orders[0] && !(flags & XC_FLAGS_HAVE_EXC))
     return 10000;
-
-  if(orders[1] && !(flags & XC_FLAGS_HAVE_VXC))
+  if (orders[1] && !(flags & XC_FLAGS_HAVE_VXC))
     return 10001;
-
-  if(orders[2] && !(flags & XC_FLAGS_HAVE_FXC))
+  if (orders[2] && !(flags & XC_FLAGS_HAVE_FXC))
     return 10002;
-
-  if(orders[3] && !(flags & XC_FLAGS_HAVE_KXC))
+  if (orders[3] && !(flags & XC_FLAGS_HAVE_KXC))
     return 10003;
-
-  if(orders[4] && !(flags & XC_FLAGS_HAVE_LXC))
+  if (orders[4] && !(flags & XC_FLAGS_HAVE_LXC))
     return 10004;
-  
-  for(ii=0; ii<XC_TOTAL_NUMBER_OUTPUT_VARIABLES; ii++){
-    if(! orders[xc_output_variables_order_key[ii]])
-      continue;
 
-    if(family < xc_output_variables_family_key[ii])
+  int ingredients = xc_func_info_get_ingredients(func->info) | ext_flags;
+  for (int ii = 0; ii < XC_TOTAL_NUMBER_OUTPUT_VARIABLES; ii++) {
+    if (!orders[xc_output_variables_order_key[ii]])
       continue;
-
-    if(family >= XC_FAMILY_MGGA){
-      if(! (flags & XC_FLAGS_NEEDS_LAPLACIAN) &&
-         (xc_output_variables_flags_key[ii] & XC_FLAGS_NEEDS_LAPLACIAN))
-        continue;
-      if(! (flags & XC_FLAGS_NEEDS_TAU) &&
-         (xc_output_variables_flags_key[ii] & XC_FLAGS_NEEDS_TAU))
-        continue;
-    }
-    if(out->fields[ii] == NULL)
+    if (((ingredients & xc_output_variables_needs_key[ii]) == xc_output_variables_needs_key[ii]) &&
+        (out->fields[ii] == NULL))
       return ii; /* the field ii is not allocated */
   }
 
@@ -568,24 +456,20 @@ xc_output_variables_sanity_check(const xc_output_variables *out, const int *orde
   return -1;
 }
 
-
-void
-xc_output_variables_deallocate(xc_output_variables *out)
-{
+void xc_output_variables_deallocate(xc_output_variables *out) {
   int ii;
-  
-  for(ii=0; ii<XC_TOTAL_NUMBER_OUTPUT_VARIABLES; ii++)
-    if(out->fields[ii] != NULL)
+
+  for (ii = 0; ii < XC_TOTAL_NUMBER_OUTPUT_VARIABLES; ii++)
+    if (out->fields[ii] != NULL)
       libxc_free(out->fields[ii]);
   libxc_free(out);
 }
 
-void
-xc_output_variables_initialize(xc_output_variables *out)
-{
+void xc_output_variables_initialize(xc_output_variables *out) {
   int ii;
   
-  for(ii=0; ii<XC_TOTAL_NUMBER_OUTPUT_VARIABLES; ii++)
-    if(out->fields[ii] != NULL)
-      libxc_memset(out->fields[ii], 0, sizeof(double)*out->np*out->dim->fields[ii]);
+  for (ii = 0; ii < XC_TOTAL_NUMBER_OUTPUT_VARIABLES; ii++)
+    if (out->fields[ii] != NULL)
+      libxc_memset(out->fields[ii], 0,
+                   sizeof(double) * out->np * out->dim->fields[ii]);
 }

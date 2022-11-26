@@ -288,30 +288,6 @@ typedef struct {
   };
 } xc_output_variables;
 
-/* from io_variables.c */
-extern const char *xc_input_variables_name[];     /* mapping input variable -> name */
-extern const int xc_input_variables_family_key[]; /* mapping input variable -> family */
-extern const int xc_input_variables_flags_key[];  /* mapping input variable -> flags */
-
-const xc_input_variables_dimensions *input_variables_dimensions_get(int nspin);
-xc_input_variables *xc_input_variables_allocate(size_t np, int family, int flags, int nspin);
-int xc_input_variables_sanity_check(const xc_input_variables *out, int family, int flags);
-void xc_input_variables_initialize(xc_input_variables *out);
-void xc_input_variables_deallocate(xc_input_variables *out);
-
-
-extern const char *xc_output_variables_name[];     /* mapping output variable -> name */
-extern const int xc_output_variables_family_key[]; /* mapping output variable -> family */
-extern const int xc_output_variables_flags_key[];  /* mapping output variable -> flags */
-/* only for output variables */
-extern const int xc_output_variables_order_key[];  /* mapping output variable -> order of derivative */
-
-const xc_output_variables_dimensions *output_variables_dimensions_get(int nspin);
-xc_output_variables *xc_output_variables_allocate(size_t np, const int *orders, int family, int flags, int nspin);
-int xc_output_variables_sanity_check(const xc_output_variables *out, const int *orders, int family, int flags);
-void xc_output_variables_initialize(xc_output_variables *out);
-void xc_output_variables_deallocate(xc_output_variables *out);
-
 /* type of the lda function */
 typedef void (*xc_functionals_work)(const struct xc_func_type *p,
      const xc_input_variables *in, xc_output_variables *out);
@@ -453,6 +429,30 @@ void  xc_func_set_ext_params_name(xc_func_type *p, const char *name, double par)
 double xc_func_get_ext_params_name(const xc_func_type *p, const char *name);
 /** Gets an external parameter by index */
 double xc_func_get_ext_params_value(const xc_func_type *p, int number);
+
+
+/* from io_variables.c */
+extern const char *xc_input_variables_name[];     /* mapping input variable -> name */
+extern const int xc_input_variables_needs_key[];  /* mapping input variable -> needs */
+
+const xc_input_variables_dimensions *input_variables_dimensions_get(int nspin);
+xc_input_variables *xc_input_variables_allocate(const xc_func_type *func, size_t np);
+int xc_input_variables_sanity_check(const xc_func_type *func, const xc_input_variables *in);
+void xc_input_variables_initialize(xc_input_variables *out);
+void xc_input_variables_deallocate(xc_input_variables *out);
+
+
+extern const char *xc_output_variables_name[];     /* mapping output variable -> name */
+extern const int xc_output_variables_needs_key[];  /* mapping output variable -> needs */
+/* only for output variables */
+extern const int xc_output_variables_order_key[];  /* mapping output variable -> order of derivative */
+
+const xc_output_variables_dimensions *output_variables_dimensions_get(int nspin);
+xc_output_variables *xc_output_variables_allocate(const xc_func_type *func, size_t np, const int *orders, int ext_flags);
+int xc_output_variables_sanity_check(const xc_func_type *func, const xc_output_variables *out, const int *orders, int ext_flags);
+void xc_output_variables_initialize(xc_output_variables *out);
+void xc_output_variables_deallocate(xc_output_variables *out);
+
 
 #include "xc_funcs.h"
 #include "xc_funcs_removed.h"
