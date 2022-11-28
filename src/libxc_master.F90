@@ -26,6 +26,7 @@ module xc_f03_lib_m
     xc_f03_func_info_get_family, &
     xc_f03_func_info_get_references, &
     xc_f03_func_info_get_flags, &
+    xc_f03_func_info_get_ingredients, &
     xc_f03_func_info_get_n_ext_params, &
     xc_f03_func_info_get_ext_params_name, &
     xc_f03_func_info_get_ext_params_description, &
@@ -139,6 +140,13 @@ module xc_f03_lib_m
     XC_FLAGS_NEEDS_LAPLACIAN = 32768
 
   integer(c_int), parameter, public :: &
+    XC_FUNC_NEEDS_RHO       =  1, &
+    XC_FUNC_NEEDS_SIGMA     =  2, &
+    XC_FUNC_NEEDS_LAPLACIAN =  4, &
+    XC_FUNC_NEEDS_TAU       =  8, &
+    XC_FUNC_NEEDS_EXX       = 16
+
+  integer(c_int), parameter, public :: &
     XC_TAU_EXPLICIT         =     0,   &
     XC_TAU_EXPANSION        =     1
 
@@ -215,6 +223,11 @@ module xc_f03_lib_m
       import
       type(c_ptr), value :: info
     end function xc_func_info_get_flags
+
+    integer(c_int) function xc_func_info_get_ingredients(info) bind(c)
+      import
+      type(c_ptr), value :: info
+    end function xc_func_info_get_ingredients
 
     type(c_ptr) function xc_func_info_get_references(info, number) bind(c)
       import
@@ -886,6 +899,13 @@ end interface
     flags = xc_func_info_get_flags(info%ptr)
 
   end function xc_f03_func_info_get_flags
+
+  integer(c_int) function xc_f03_func_info_get_ingredients(info) result(flags)
+    type(xc_f03_func_info_t), intent(in) :: info
+
+    flags = xc_func_info_get_ingredients(info%ptr)
+
+  end function xc_f03_func_info_get_ingredients
 
   type(xc_f03_func_reference_t) function xc_f03_func_info_get_references(info, number) result(reference)
     type(xc_f03_func_info_t), intent(in)    :: info
