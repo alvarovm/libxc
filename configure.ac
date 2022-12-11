@@ -274,6 +274,13 @@ AC_CONFIG_FILES([Makefile
   src/maple2c/gga_vxc/Makefile
   src/maple2c/mgga_exc/Makefile
   src/maple2c/mgga_vxc/Makefile
+  src/functionals/Makefile
+  src/functionals/lda_exc/Makefile
+  src/functionals/lda_vxc/Makefile
+  src/functionals/gga_exc/Makefile
+  src/functionals/gga_vxc/Makefile
+  src/functionals/mgga_exc/Makefile
+  src/functionals/mgga_vxc/Makefile
   testsuite/Makefile
   testsuite/pytest/Makefile
   pkgconfig/Makefile

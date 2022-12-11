@@ -25,8 +25,8 @@ def read_infos(srcdir, family, all_ids):
 
   # find all files that belong to this family, for example should
   # returns all files of the type gga_*.c and hyb_gga_*.c for GGAs
-  glob_files  = glob.glob(srcdir + "/" + family + "_*.c")
-  glob_files += glob.glob(srcdir + "/hyb_" + family + "_*.c")
+  glob_files  = glob.glob(srcdir + "/functionals/{0}_*xc/{0}_*.c".format(family))
+  glob_files += glob.glob(srcdir + "/functionals/{0}_*xc/hyb_{0}_*.c".format(family))
 
   # pattern that matches "#define FUNC number /* comment */"
   pattern_def = re.compile(r'#define\s+XC_(((?:HYB_)?' + family.upper() + r")_\S+)\s+(\S+)\s+\/\*\s*(.*?)\s*\*\/")

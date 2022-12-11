@@ -63,6 +63,24 @@ Makefile.in
 /src/libxc_docs.txt
 /src/xc-sanity
 
+# /src/functionals/
+/src/functionals/.deps
+
+# /src/functionals/lda_exc/
+/src/functionals/lda_exc/.deps
+# /src/functionals/lda_vxc/
+/src/functionals/lda_vxc/.deps
+
+# /src/functionals/gga_exc/
+/src/functionals/gga_exc/.deps
+# /src/functionals/gga_vxc/
+/src/functionals/gga_vxc/.deps
+
+# /src/functionals/mgga_exc/
+/src/functionals/mgga_exc/.deps
+# /src/functionals/mgga_vxc/
+/src/functionals/mgga_vxc/.deps
+
 # /testsuite/
 /testsuite/.deps
 /testsuite/xc-get_data
