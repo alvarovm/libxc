@@ -20,7 +20,7 @@
 #   docopt: --static Create only the static library [default: False].
 #   define: '-DSTATIC_LIBRARY_ONLY=%s' % arguments['--static']
 
-if(ENABLE_GENERIC)
+if(${PROJECT_NAME}_ENABLE_GENERIC)
     if(DEFINED CMAKE_Fortran_COMPILER_ID)
         if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
             set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -static-libgfortran")

@@ -11,7 +11,39 @@ cmake_minimum_required(VERSION 3.1)
 set(CMAKE_C_STANDARD 99)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-if(ENABLE_CUDA)
+################################### Options ####################################
+include(psi4OptionsTools)
+option_with_default(CMAKE_BUILD_TYPE "Build type" Release)
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  option_with_print(${PROJECT_NAME}_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" ON)
+  option_with_print(${PROJECT_NAME}_BUILD_TESTING "Compile the testing infrastructure" ON)
+else()
+  option_with_print(${PROJECT_NAME}_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" OFF)
+  option_with_print(${PROJECT_NAME}_BUILD_TESTING "Compile the testing infrastructure" OFF)
+endif ()
+set(BUILD_SHARED_LIBS ${${PROJECT_NAME}_SHARED_LIBS})
+option_with_default(${PROJECT_NAME}_BUILD_FPIC "Libraries will be compiled with position independent code" ON)
+if((${${PROJECT_NAME}_SHARED_LIBS}) AND NOT ${${PROJECT_NAME}_BUILD_FPIC})
+  message(FATAL_ERROR "${PROJECT_NAME}_SHARED_LIBS ON and ${PROJECT_NAME}_BUILD_FPIC OFF are incompatible, as shared library requires position independent code")
+endif()
+option_with_default(${PROJECT_NAME}_NAMESPACE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_INCLUDEDIR to which headers are installed (e.g., /libxc)" /)
+option_with_print(${PROJECT_NAME}_ENABLE_GENERIC "Enable mostly static linking in shared library" OFF)
+option_with_print(${PROJECT_NAME}_ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
+option_with_print(${PROJECT_NAME}_ENABLE_CUDA "Build with CUDA support" OFF)
+option_with_print(${PROJECT_NAME}_ENABLE_PYTHON "Install Python API interface" OFF)
+if(${${PROJECT_NAME}_ENABLE_PYTHON} AND NOT ${${PROJECT_NAME}_SHARED_LIBS})
+  message(FATAL_ERROR "${PROJECT_NAME}_ENABLE_PYTHON ON requires ${PROJECT_NAME}_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
+endif()
+include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
+option_with_print(${PROJECT_NAME}_DISABLE_VXC "Don't compile first derivative code" OFF)
+option_with_print(${PROJECT_NAME}_DISABLE_FXC "Don't compile second derivative code" OFF)
+option_with_print(${PROJECT_NAME}_DISABLE_KXC "Don't compile third derivative code" ON)
+option_with_print(${PROJECT_NAME}_DISABLE_LXC "Don't compile fourth derivative code" ON)
+option_with_print(${PROJECT_NAME}_DISABLE_FHC "Disable enforcement of Fermi hole curvature?" OFF)
+
+######################### Process & Validate Options ###########################
+
+if(${PROJECT_NAME}_ENABLE_CUDA)
   cmake_minimum_required(VERSION 3.8)
   set(CMAKE_VERBOSE_MAKEFILE ON)
   enable_language(CUDA)
@@ -21,35 +53,6 @@ if(ENABLE_CUDA)
   endif()
 endif()
 
-################################### Options ####################################
-include(psi4OptionsTools)
-option_with_default(CMAKE_BUILD_TYPE "Build type" Release)
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  option_with_print(BUILD_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" ON)
-  option_with_print(BUILD_TESTING "Compile the testing infrastructure" ON)
-else()
-  option_with_print(BUILD_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" OFF)
-  option_with_print(BUILD_TESTING "Compile the testing infrastructure" OFF)
-endif ()
-option_with_default(BUILD_FPIC "Libraries will be compiled with position independent code" ON)
-if((${BUILD_SHARED_LIBS}) AND NOT ${BUILD_FPIC})
-  message(FATAL_ERROR "BUILD_SHARED_LIBS ON and BUILD_FPIC OFF are incompatible, as shared library requires position independent code")
-endif()
-option_with_default(NAMESPACE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_INCLUDEDIR to which headers are installed (e.g., /libxc)" /)
-option_with_print(ENABLE_GENERIC "Enable mostly static linking in shared library" OFF)
-option_with_print(ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
-option_with_print(ENABLE_PYTHON "Install Python API interface" OFF)
-if(${ENABLE_PYTHON} AND NOT ${BUILD_SHARED_LIBS})
-  message(FATAL_ERROR "ENABLE_PYTHON ON requires BUILD_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
-endif()
-include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
-option_with_print(DISABLE_VXC "Don't compile first derivative code" OFF)
-option_with_print(DISABLE_FXC "Don't compile second derivative code" OFF)
-option_with_print(DISABLE_KXC "Don't compile third derivative code" ON)
-option_with_print(DISABLE_LXC "Don't compile fourth derivative code" ON)
-option_with_print(DISABLE_FHC "Disable enforcement of Fermi hole curvature?" OFF)
-
-######################### Process & Validate Options ###########################
 include(autocmake_safeguards)
 include(custom_static_library)
 
@@ -75,27 +78,27 @@ if (HAVE_CBRT)
 endif (HAVE_CBRT)
 
 # Turn off derivative code
-if(DISABLE_VXC)
+if(${PROJECT_NAME}_DISABLE_VXC)
   add_definitions (-DXC_DONT_COMPILE_VXC)
   add_definitions (-DXC_DONT_COMPILE_FXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
-endif(DISABLE_VXC)
-if(DISABLE_FXC)
+endif()
+if(${PROJECT_NAME}_DISABLE_FXC)
   add_definitions (-DXC_DONT_COMPILE_FXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
-endif(DISABLE_FXC)
-if(DISABLE_KXC)
+endif()
+if(${PROJECT_NAME}_DISABLE_KXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
-endif(DISABLE_KXC)
-if(DISABLE_LXC)
+endif()
+if(${PROJECT_NAME}_DISABLE_LXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
-endif(DISABLE_LXC)
-if(NOT DISABLE_FHC)
+endif()
+if(NOT ${PROJECT_NAME}_DISABLE_FHC)
   add_definitions (-DXC_ENFORCE_FERMI_HOLE_CURVATURE)
-endif(NOT DISABLE_FHC)
+endif()
 
 # <<<  Build  >>>
 
@@ -472,7 +475,7 @@ set(src_prefix "src/")
 string(REGEX REPLACE "([^;]+)" "${src_prefix}\\1" sources_list "${raw_sources_list}")
 
 
-if(ENABLE_CUDA)
+if(${PROJECT_NAME}_ENABLE_CUDA)
   set_source_files_properties(${sources_list} PROPERTIES LANGUAGE CUDA)
 endif()
 
@@ -501,32 +504,32 @@ add_library(xc ${sources_list})
 add_library(${PROJECT_NAME}::xc ALIAS xc)
 set_target_properties(xc PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(xc INTERFACE ${STANDARD_MATH_LIBRARY})
-set_target_properties(xc PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
+set_target_properties(xc PROPERTIES POSITION_INDEPENDENT_CODE ${${PROJECT_NAME}_BUILD_FPIC}
   SOVERSION ${${PROJECT_NAME}_SOMAJOR})
-if(${BUILD_SHARED_LIBS})
+if(${PROJECT_NAME}_SHARED_LIBS)
   target_link_libraries(xc PRIVATE ${LIBC_INTERJECT})
   if(APPLE)
     set_target_properties(xc PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
   endif()
 endif()
 
-if(ENABLE_FORTRAN)
+if(${PROJECT_NAME}_ENABLE_FORTRAN)
   enable_language(Fortran)
   add_library(xcf03 ${raw_sources_list_f90})
   add_library(${PROJECT_NAME}::xcf03 ALIAS xcf03)
   target_link_libraries(xcf03 xc)
-  set_target_properties(xcf03 PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
+  set_target_properties(xcf03 PROPERTIES POSITION_INDEPENDENT_CODE ${${PROJECT_NAME}_BUILD_FPIC}
     SOVERSION ${${PROJECT_NAME}_SOMAJOR})
 endif()
 
 add_executable(xc-info "${src_prefix}/xc-info.c")
-if(ENABLE_CUDA)
+if(${PROJECT_NAME}_ENABLE_CUDA)
   set_source_files_properties("${src_prefix}/xc-info.c" PROPERTIES LANGUAGE CUDA)
 endif()
 target_link_libraries(xc-info xc)
 
 add_executable(xc-threshold "${src_prefix}/xc-threshold.c")
-if(ENABLE_CUDA)
+if(${PROJECT_NAME}_ENABLE_CUDA)
   set_source_files_properties("${src_prefix}/xc-threshold.c" PROPERTIES LANGUAGE CUDA)
 endif()
 target_link_libraries(xc-threshold xc)
@@ -537,7 +540,7 @@ include_directories(${PROJECT_SOURCE_DIR}/${src_prefix}  # for util.h
   ${PROJECT_BINARY_DIR}  # for xc_version.h, config.h
 )
 
-if(BUILD_TESTING)
+if(${PROJECT_NAME}_BUILD_TESTING)
   find_program(BZip2_EXECUTABLE
     NAMES bzip2
     DOC "Path to zipping utility")
@@ -557,7 +560,7 @@ install(FILES ${PROJECT_BINARY_DIR}/${src_prefix}/xc.h
   ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs_worker.h
   ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs_removed.h
   ${PROJECT_BINARY_DIR}/xc_version.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${NAMESPACE_INSTALL_INCLUDEDIR})
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${${PROJECT_NAME}_NAMESPACE_INSTALL_INCLUDEDIR})
 install(TARGETS xc-info
   OPTIONAL
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -568,7 +571,7 @@ install(TARGETS xc
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if(ENABLE_FORTRAN)
+if(${PROJECT_NAME}_ENABLE_FORTRAN)
   configure_file(cmake/libxcf03.pc.in libxcf03.pc @ONLY)
   install(TARGETS xc xcf03
     EXPORT f_interface
@@ -577,7 +580,7 @@ if(ENABLE_FORTRAN)
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
   install(FILES "${PROJECT_BINARY_DIR}/xc_f03_lib_m.mod"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${NAMESPACE_INSTALL_INCLUDEDIR})
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${${PROJECT_NAME}_NAMESPACE_INSTALL_INCLUDEDIR})
   if(NOT MSVC)
     install(FILES ${PROJECT_BINARY_DIR}/libxcf03.pc
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
@@ -607,14 +610,14 @@ install(EXPORT c_interface
   FILE "${PN}Targets-C.cmake"
   DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
-if(ENABLE_FORTRAN)
+if(${PROJECT_NAME}_ENABLE_FORTRAN)
     install(EXPORT f_interface
       NAMESPACE "${PN}::"
       FILE "${PN}Targets-Fortran.cmake"
       DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 endif()
 
-if(ENABLE_PYTHON)
+if(${PROJECT_NAME}_ENABLE_PYTHON)
   set(SOURCE_PYTHON_API
     pylibxc/__init__.py
     pylibxc/core.py
