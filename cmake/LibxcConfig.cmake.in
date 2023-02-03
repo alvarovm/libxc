@@ -20,6 +20,7 @@
 #   static - search for only static library
 #   C - search for C library only, even if Fortran available
 #   Fortran - search for Fortran library (C library always present)
+#   xc_dD - search for library including functional derivatives order D (D=0..4)
 #
 #
 # Exported targets:
@@ -41,7 +42,7 @@
 # ::
 #
 #   find_package(Libxc)
-#   find_package(Libxc 6.0.0 EXACT CONFIG REQUIRED COMPONENTS shared C)
+#   find_package(Libxc 6.0.0 EXACT CONFIG REQUIRED COMPONENTS shared C xc_d2)
 #
 #
 # The following variables can be set to guide the search for this package:
@@ -82,6 +83,11 @@ if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${PN}Targets-Fortran.cmake")
     set(${PN}_Fortran_FOUND 1)
 endif()
 list(FIND ${PN}_FIND_COMPONENTS "Fortran" _seek_Fortran)
+
+# check derivative component
+foreach(_xcd @Libxc_DERIV_COMPONENTS@)
+    set(${PN}_${_xcd}_FOUND 1)
+endforeach()
 
 check_required_components(${PN})
 
