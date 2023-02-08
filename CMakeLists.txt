@@ -514,13 +514,6 @@ if(ENABLE_FORTRAN)
     SOVERSION ${${PROJECT_NAME}_SOMAJOR})
 endif()
 
-# Permanent aliases ====================================================================================================
-# * make Libxc:: targets available for both `add_subdirectory(Libxc)` & `find_package(Libxc)` approaches
-add_library(${PN}::xc ALIAS xc)
-if (ENABLE_FORTRAN)
-    add_library(${PN}::xcf03 ALIAS xcf03)
-endif()
-
 add_executable(xc-info "${src_prefix}/xc-info.c")
 if(ENABLE_CUDA)
   set_source_files_properties("${src_prefix}/xc-info.c" PROPERTIES LANGUAGE CUDA)
