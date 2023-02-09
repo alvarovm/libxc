@@ -488,10 +488,17 @@ set(CMAKE_INSTALL_RPATH ${base} ${base}/${relDir})
 
 # STATIC/SHARED on below governed by BUILD_SHARED_LIBS
 add_library(xc ${sources_list})
+add_library(Libxc::xc ALIAS xc)
 set_target_properties(xc PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(xc INTERFACE ${STANDARD_MATH_LIBRARY})
-set_target_properties(xc PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
-  SOVERSION ${${PROJECT_NAME}_SOMAJOR})
+set_target_properties(xc
+  PROPERTIES
+    POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
+    SOVERSION ${${PROJECT_NAME}_SOMAJOR}
+    Libxc_VERSION ${VERSION}
+    EXPORT_PROPERTIES "Libxc_VERSION"
+  )
+
 if(${BUILD_SHARED_LIBS})
   target_link_libraries(xc PRIVATE ${LIBC_INTERJECT})
   if(APPLE)
@@ -502,6 +509,7 @@ endif()
 if(ENABLE_FORTRAN)
   enable_language(Fortran)
   add_library(xcf03 ${raw_sources_list_f90})
+  add_library(Libxc::xcf03 ALIAS xcf03)
   target_link_libraries(xcf03 xc)
   set_target_properties(xcf03 PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
     SOVERSION ${${PROJECT_NAME}_SOMAJOR})
