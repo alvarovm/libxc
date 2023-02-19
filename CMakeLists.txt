@@ -603,24 +603,7 @@ if(ENABLE_FORTRAN)
 endif()
 
 if(ENABLE_PYTHON)
-  set(SOURCE_PYTHON_API
-    pylibxc/__init__.py
-    pylibxc/core.py
-    pylibxc/flags.py
-    pylibxc/functional.py
-    pylibxc/structs.py
-    pylibxc/util.py
-    pylibxc/version.py
-  )
-  install(
-    FILES ${SOURCE_PYTHON_API}
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pylibxc
-  )
-  if(UNIX)
-    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \
-      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${${PROJECT_NAME}_SOMAJOR} \
-      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pylibxc/libxc.so)")
-  endif()
+    add_subdirectory(pylibxc)
 endif()
 
 export(EXPORT c_interface
