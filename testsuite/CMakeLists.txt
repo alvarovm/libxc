@@ -4,7 +4,7 @@ add_executable(xc-error xc-error.c)
 add_executable(xc-get_data xc-get_data.c)
 add_executable(xc-regression xc-regression.c)
 
-if(${PROJECT_NAME}_ENABLE_CUDA)
+if(LIBXC_ENABLE_CUDA)
   set_source_files_properties(xc-consistency.c xc-error.c xc-get_data.c xc-regression.c PROPERTIES LANGUAGE CUDA)
 endif()
 

@@ -13,37 +13,57 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 ################################### Options ####################################
 include(psi4OptionsTools)
+include(Libxc_helpers)
 option_with_default(CMAKE_BUILD_TYPE "Build type" Release)
+option_with_print(LIBXC_IGNORE_DEPRECATED "Ignore any deprecated option of Libxc. Necessary if you need to pass an option that was deprecated by Libxc but used by another package" OFF)
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  option_with_print(${PROJECT_NAME}_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" ON)
-  option_with_print(${PROJECT_NAME}_BUILD_TESTING "Compile the testing infrastructure" ON)
+  option_with_print(LIBXC_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" ON)
+  option_with_print(LIBXC_BUILD_TESTING "Compile the testing infrastructure" ON)
 else()
-  option_with_print(${PROJECT_NAME}_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" OFF)
-  option_with_print(${PROJECT_NAME}_BUILD_TESTING "Compile the testing infrastructure" OFF)
+  option_with_print(LIBXC_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" OFF)
+  option_with_print(LIBXC_BUILD_TESTING "Compile the testing infrastructure" OFF)
 endif ()
-set(BUILD_SHARED_LIBS ${${PROJECT_NAME}_SHARED_LIBS})
-option_with_default(${PROJECT_NAME}_BUILD_FPIC "Libraries will be compiled with position independent code" ON)
-if((${${PROJECT_NAME}_SHARED_LIBS}) AND NOT ${${PROJECT_NAME}_BUILD_FPIC})
-  message(FATAL_ERROR "${PROJECT_NAME}_SHARED_LIBS ON and ${PROJECT_NAME}_BUILD_FPIC OFF are incompatible, as shared library requires position independent code")
+# TODO: Remove deprecated options on next release cycle
+deprecate_option(BUILD_SHARED_LIBS LIBXC_SHARED_LIBS MAYBE_NAME_CLASH)
+set(BUILD_SHARED_LIBS ${LIBXC_SHARED_LIBS})
+option_with_default(LIBXC_BUILD_FPIC "Libraries will be compiled with position independent code" ON)
+# TODO: Remove deprecated options on next release cycle
+deprecate_option(BUILD_FPIC LIBXC_BUILD_FPIC MAYBE_NAME_CLASH)
+if((${LIBXC_SHARED_LIBS}) AND NOT ${LIBXC_BUILD_FPIC})
+  message(FATAL_ERROR "LIBXC_SHARED_LIBS ON and LIBXC_BUILD_FPIC OFF are incompatible, as shared library requires position independent code")
 endif()
-option_with_default(${PROJECT_NAME}_NAMESPACE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_INCLUDEDIR to which headers are installed (e.g., /libxc)" /)
-option_with_print(${PROJECT_NAME}_ENABLE_GENERIC "Enable mostly static linking in shared library" OFF)
-option_with_print(${PROJECT_NAME}_ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
-option_with_print(${PROJECT_NAME}_ENABLE_CUDA "Build with CUDA support" OFF)
-option_with_print(${PROJECT_NAME}_ENABLE_PYTHON "Install Python API interface" OFF)
-if(${${PROJECT_NAME}_ENABLE_PYTHON} AND NOT ${${PROJECT_NAME}_SHARED_LIBS})
-  message(FATAL_ERROR "${PROJECT_NAME}_ENABLE_PYTHON ON requires ${PROJECT_NAME}_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
+option_with_default(LIBXC_NAMESPACE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_INCLUDEDIR to which headers are installed (e.g., /libxc)" /)
+option_with_print(LIBXC_ENABLE_GENERIC "Enable mostly static linking in shared library" OFF)
+option_with_print(LIBXC_ENABLE_FORTRAN "Build Fortran 2003 interface" OFF)
+option_with_print(LIBXC_ENABLE_CUDA "Build with CUDA support" OFF)
+option_with_print(LIBXC_ENABLE_PYTHON "Install Python API interface" OFF)
+# TODO: Remove deprecated options on next release cycle
+deprecate_option(ENABLE_PYTHON LIBXC_ENABLE_PYTHON MAYBE_NAME_CLASH)
+if(${LIBXC_ENABLE_PYTHON} AND NOT ${LIBXC_SHARED_LIBS})
+  message(FATAL_ERROR "LIBXC_ENABLE_PYTHON ON requires LIBXC_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
 endif()
 include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
-option_with_print(${PROJECT_NAME}_DISABLE_VXC "Don't compile first derivative code" OFF)
-option_with_print(${PROJECT_NAME}_DISABLE_FXC "Don't compile second derivative code" OFF)
-option_with_print(${PROJECT_NAME}_DISABLE_KXC "Don't compile third derivative code" ON)
-option_with_print(${PROJECT_NAME}_DISABLE_LXC "Don't compile fourth derivative code" ON)
-option_with_print(${PROJECT_NAME}_DISABLE_FHC "Disable enforcement of Fermi hole curvature?" OFF)
+option_with_print(LIBXC_DISABLE_VXC "Don't compile first derivative code" OFF)
+option_with_print(LIBXC_DISABLE_FXC "Don't compile second derivative code" OFF)
+option_with_print(LIBXC_DISABLE_KXC "Don't compile third derivative code" ON)
+option_with_print(LIBXC_DISABLE_LXC "Don't compile fourth derivative code" ON)
+option_with_print(LIBXC_DISABLE_FHC "Disable enforcement of Fermi hole curvature?" OFF)
+
+# TODO: Remove deprecated options on next release cycle
+deprecate_option(BUILD_TESTING LIBXC_BUILD_TESTING MAYBE_NAME_CLASH)
+deprecate_option(NAMESPACE_INSTALL_INCLUDEDIR LIBXC_NAMESPACE_INSTALL_INCLUDEDIR MAYBE_NAME_CLASH)
+deprecate_option(ENABLE_GENERIC LIBXC_ENABLE_GENERIC MAYBE_NAME_CLASH)
+deprecate_option(ENABLE_FORTRAN LIBXC_ENABLE_FORTRAN MAYBE_NAME_CLASH)
+deprecate_option(ENABLE_CUDA LIBXC_ENABLE_CUDA MAYBE_NAME_CLASH)
+deprecate_option(DISABLE_VXC LIBXC_DISABLE_VXC MAYBE_NAME_CLASH)
+deprecate_option(DISABLE_FXC LIBXC_DISABLE_FXC MAYBE_NAME_CLASH)
+deprecate_option(DISABLE_KXC LIBXC_DISABLE_KXC MAYBE_NAME_CLASH)
+deprecate_option(DISABLE_LXC LIBXC_DISABLE_LXC MAYBE_NAME_CLASH)
+deprecate_option(DISABLE_FHC LIBXC_DISABLE_FHC MAYBE_NAME_CLASH)
 
 ######################### Process & Validate Options ###########################
 
-if(${PROJECT_NAME}_ENABLE_CUDA)
+if(LIBXC_ENABLE_CUDA)
   cmake_minimum_required(VERSION 3.8)
   set(CMAKE_VERBOSE_MAKEFILE ON)
   enable_language(CUDA)
@@ -60,7 +80,7 @@ include(custom_static_library)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-set(PN ${PROJECT_NAME})
+set(PN Libxc)
 
 # Need BASH to run test suite
 find_program(BASH_EXECUTABLE bash)
@@ -78,25 +98,25 @@ if (HAVE_CBRT)
 endif (HAVE_CBRT)
 
 # Turn off derivative code
-if(${PROJECT_NAME}_DISABLE_VXC)
+if(LIBXC_DISABLE_VXC)
   add_definitions (-DXC_DONT_COMPILE_VXC)
   add_definitions (-DXC_DONT_COMPILE_FXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
 endif()
-if(${PROJECT_NAME}_DISABLE_FXC)
+if(LIBXC_DISABLE_FXC)
   add_definitions (-DXC_DONT_COMPILE_FXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
 endif()
-if(${PROJECT_NAME}_DISABLE_KXC)
+if(LIBXC_DISABLE_KXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
 endif()
-if(${PROJECT_NAME}_DISABLE_LXC)
+if(LIBXC_DISABLE_LXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
 endif()
-if(NOT ${PROJECT_NAME}_DISABLE_FHC)
+if(NOT LIBXC_DISABLE_FHC)
   add_definitions (-DXC_ENFORCE_FERMI_HOLE_CURVATURE)
 endif()
 
@@ -111,14 +131,14 @@ foreach(ver ${_libxc_configure_ac})
         set(PROJECT_VERSION_MINOR ${CMAKE_MATCH_2})
         set(PROJECT_VERSION_PATCH ${CMAKE_MATCH_3})
         # TODO: Move away from manually defined version from autotools
-        set(${PROJECT_NAME}_VERSION_MAJOR ${CMAKE_MATCH_1})
-        set(${PROJECT_NAME}_VERSION_MINOR ${CMAKE_MATCH_2})
-        set(${PROJECT_NAME}_VERSION_PATCH ${CMAKE_MATCH_3})
+        set(Libxc_VERSION_MAJOR ${CMAKE_MATCH_1})
+        set(Libxc_VERSION_MINOR ${CMAKE_MATCH_2})
+        set(Libxc_VERSION_PATCH ${CMAKE_MATCH_3})
     endif()
 endforeach()
 
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
-set(${PROJECT_NAME}_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+set(Libxc_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 message(STATUS "Version: Full ${PROJECT_VERSION}")
 
 # repurpose xc_version from Make for CMake
@@ -145,9 +165,9 @@ foreach(ver ${_libxc_configure_ac})
     set(XC_${CMAKE_MATCH_1} "${CMAKE_MATCH_2}" CACHE INTERNAL "")
   endif()
 endforeach()
-set(${PROJECT_NAME}_SOVERSION ${XC_CURRENT}:${XC_REVISION}:${XC_AGE})
-math(EXPR ${PROJECT_NAME}_SOMAJOR "${XC_CURRENT} - ${XC_AGE}")
-message(STATUS "SO Version: Full ${${PROJECT_NAME}_SOVERSION} Major ${${PROJECT_NAME}_SOMAJOR}")
+set(Libxc_SOVERSION ${XC_CURRENT}:${XC_REVISION}:${XC_AGE})
+math(EXPR Libxc_SOMAJOR "${XC_CURRENT} - ${XC_AGE}")
+message(STATUS "SO Version: Full ${Libxc_SOVERSION} Major ${Libxc_SOMAJOR}")
 
 set(raw_sources_list
   bessel.c
@@ -475,7 +495,7 @@ set(src_prefix "src/")
 string(REGEX REPLACE "([^;]+)" "${src_prefix}\\1" sources_list "${raw_sources_list}")
 
 
-if(${PROJECT_NAME}_ENABLE_CUDA)
+if(LIBXC_ENABLE_CUDA)
   set_source_files_properties(${sources_list} PROPERTIES LANGUAGE CUDA)
 endif()
 
@@ -501,35 +521,35 @@ set(CMAKE_INSTALL_RPATH ${base} ${base}/${relDir})
 
 # STATIC/SHARED on below governed by BUILD_SHARED_LIBS
 add_library(xc ${sources_list})
-add_library(${PROJECT_NAME}::xc ALIAS xc)
+add_library(Libxc::xc ALIAS xc)
 set_target_properties(xc PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(xc INTERFACE ${STANDARD_MATH_LIBRARY})
-set_target_properties(xc PROPERTIES POSITION_INDEPENDENT_CODE ${${PROJECT_NAME}_BUILD_FPIC}
-  SOVERSION ${${PROJECT_NAME}_SOMAJOR})
-if(${PROJECT_NAME}_SHARED_LIBS)
+set_target_properties(xc PROPERTIES POSITION_INDEPENDENT_CODE ${LIBXC_BUILD_FPIC}
+  SOVERSION ${Libxc_SOMAJOR})
+if(LIBXC_SHARED_LIBS)
   target_link_libraries(xc PRIVATE ${LIBC_INTERJECT})
   if(APPLE)
     set_target_properties(xc PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
   endif()
 endif()
 
-if(${PROJECT_NAME}_ENABLE_FORTRAN)
+if(LIBXC_ENABLE_FORTRAN)
   enable_language(Fortran)
   add_library(xcf03 ${raw_sources_list_f90})
-  add_library(${PROJECT_NAME}::xcf03 ALIAS xcf03)
+  add_library(Libxc::xcf03 ALIAS xcf03)
   target_link_libraries(xcf03 xc)
-  set_target_properties(xcf03 PROPERTIES POSITION_INDEPENDENT_CODE ${${PROJECT_NAME}_BUILD_FPIC}
-    SOVERSION ${${PROJECT_NAME}_SOMAJOR})
+  set_target_properties(xcf03 PROPERTIES POSITION_INDEPENDENT_CODE ${LIBXC_BUILD_FPIC}
+    SOVERSION ${Libxc_SOMAJOR})
 endif()
 
 add_executable(xc-info "${src_prefix}/xc-info.c")
-if(${PROJECT_NAME}_ENABLE_CUDA)
+if(LIBXC_ENABLE_CUDA)
   set_source_files_properties("${src_prefix}/xc-info.c" PROPERTIES LANGUAGE CUDA)
 endif()
 target_link_libraries(xc-info xc)
 
 add_executable(xc-threshold "${src_prefix}/xc-threshold.c")
-if(${PROJECT_NAME}_ENABLE_CUDA)
+if(LIBXC_ENABLE_CUDA)
   set_source_files_properties("${src_prefix}/xc-threshold.c" PROPERTIES LANGUAGE CUDA)
 endif()
 target_link_libraries(xc-threshold xc)
@@ -540,7 +560,7 @@ include_directories(${PROJECT_SOURCE_DIR}/${src_prefix}  # for util.h
   ${PROJECT_BINARY_DIR}  # for xc_version.h, config.h
 )
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(LIBXC_BUILD_TESTING)
   find_program(BZip2_EXECUTABLE
     NAMES bzip2
     DOC "Path to zipping utility")
@@ -560,7 +580,7 @@ install(FILES ${PROJECT_BINARY_DIR}/${src_prefix}/xc.h
   ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs_worker.h
   ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs_removed.h
   ${PROJECT_BINARY_DIR}/xc_version.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${${PROJECT_NAME}_NAMESPACE_INSTALL_INCLUDEDIR})
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${LIBXC_NAMESPACE_INSTALL_INCLUDEDIR})
 install(TARGETS xc-info
   OPTIONAL
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -571,7 +591,7 @@ install(TARGETS xc
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if(${PROJECT_NAME}_ENABLE_FORTRAN)
+if(LIBXC_ENABLE_FORTRAN)
   configure_file(cmake/libxcf03.pc.in libxcf03.pc @ONLY)
   install(TARGETS xc xcf03
     EXPORT f_interface
@@ -580,7 +600,7 @@ if(${PROJECT_NAME}_ENABLE_FORTRAN)
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
   install(FILES "${PROJECT_BINARY_DIR}/xc_f03_lib_m.mod"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${${PROJECT_NAME}_NAMESPACE_INSTALL_INCLUDEDIR})
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${LIBXC_NAMESPACE_INSTALL_INCLUDEDIR})
   if(NOT MSVC)
     install(FILES ${PROJECT_BINARY_DIR}/libxcf03.pc
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
@@ -610,14 +630,14 @@ install(EXPORT c_interface
   FILE "${PN}Targets-C.cmake"
   DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
-if(${PROJECT_NAME}_ENABLE_FORTRAN)
+if(LIBXC_ENABLE_FORTRAN)
     install(EXPORT f_interface
       NAMESPACE "${PN}::"
       FILE "${PN}Targets-Fortran.cmake"
       DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 endif()
 
-if(${PROJECT_NAME}_ENABLE_PYTHON)
+if(LIBXC_ENABLE_PYTHON)
   set(SOURCE_PYTHON_API
     pylibxc/__init__.py
     pylibxc/core.py
@@ -633,7 +653,7 @@ if(${PROJECT_NAME}_ENABLE_PYTHON)
   )
   if(UNIX)
     install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \
-      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${${PROJECT_NAME}_SOMAJOR} \
+      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${Libxc_SOMAJOR} \
       ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pylibxc/libxc.so)")
   endif()
 endif()
