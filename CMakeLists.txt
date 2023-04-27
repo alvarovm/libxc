@@ -13,6 +13,9 @@ foreach (ver ${_libxc_configure_ac})
 endforeach ()
 
 # Compatibility for older cmake version
+if (POLICY CMP0140)
+  cmake_policy(SET CMP0140 NEW)
+endif ()
 set(cmake_compatibility "")
 # TODO: Move this in project() when minimum cmake version is >= 3.9
 if (CMAKE_VERSION VERSION_GREATER 3.8)
@@ -54,6 +57,7 @@ option_with_default(CMAKE_BUILD_TYPE "Build type" Release)
 option_with_print(LIBXC_IGNORE_DEPRECATED "Ignore any deprecated option of Libxc. Necessary if you need to pass an option that was deprecated by Libxc but used by another package" OFF)
 option_with_print(LIBXC_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" ${PROJECT_IS_TOP_LEVEL})
 option_with_print(LIBXC_BUILD_TESTING "Compile the testing infrastructure" ${PROJECT_IS_TOP_LEVEL})
+option_with_print(LIBXC_INSTALL "Install the libxc files. Should not be run from FetchContet." ${PROJECT_IS_TOP_LEVEL})
 # TODO: Remove deprecated options on next release cycle
 deprecate_option(BUILD_SHARED_LIBS LIBXC_SHARED_LIBS MAYBE_NAME_CLASH)
 set(BUILD_SHARED_LIBS ${LIBXC_SHARED_LIBS})
@@ -155,8 +159,6 @@ endif()
 
 # extract project version from source
 
-set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
-set(Libxc_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 message(STATUS "Version: Full ${PROJECT_VERSION}")
 
 # repurpose xc_version from Make for CMake
@@ -590,97 +592,118 @@ if(LIBXC_BUILD_TESTING)
   endif()
 endif()
 
-# <<<  Install  >>>
-
-# by default, headers NOT namespace protected
-install(FILES ${PROJECT_BINARY_DIR}/${src_prefix}/xc.h
-  ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs.h
-  ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs_worker.h
-  ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs_removed.h
-  ${PROJECT_BINARY_DIR}/xc_version.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${LIBXC_NAMESPACE_INSTALL_INCLUDEDIR})
-install(TARGETS xc-info
-  OPTIONAL
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(TARGETS xc
-  EXPORT c_interface
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-if(LIBXC_ENABLE_FORTRAN)
-  configure_file(cmake/libxcf03.pc.in libxcf03.pc @ONLY)
-  install(TARGETS xc xcf03
-    EXPORT f_interface
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-  install(FILES "${PROJECT_BINARY_DIR}/xc_f03_lib_m.mod"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}${LIBXC_NAMESPACE_INSTALL_INCLUDEDIR})
-  if(NOT MSVC)
-    install(FILES ${PROJECT_BINARY_DIR}/libxcf03.pc
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
-  endif()
-endif()
-
 # <<<  Export Interface  >>>
 
 target_compile_definitions(xc INTERFACE USING_${PN})
 target_include_directories(xc INTERFACE
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-# <<<  Export Config  >>>
+if (LIBXC_INSTALL)
+  # <<<  Install  >>>
 
-set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PN}")
-configure_package_config_file(cmake/${PN}Config.cmake.in
-  "${CMAKE_CURRENT_BINARY_DIR}/${PN}Config.cmake"
-  INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PN}ConfigVersion.cmake
-  VERSION ${${PN}_VERSION}
-  COMPATIBILITY SameMajorVersion)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PN}Config.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}/${PN}ConfigVersion.cmake
-  DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-install(EXPORT c_interface
-  NAMESPACE "${PN}::"
-  FILE "${PN}Targets-C.cmake"
-  DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+  # by default, headers NOT namespace protected
+  install(FILES ${PROJECT_BINARY_DIR}/${src_prefix}/xc.h
+          ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs.h
+          ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs_worker.h
+          ${PROJECT_SOURCE_DIR}/${src_prefix}/xc_funcs_removed.h
+          ${PROJECT_BINARY_DIR}/xc_version.h
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}${LIBXC_NAMESPACE_INSTALL_INCLUDEDIR}")
+  install(TARGETS xc-info
+          OPTIONAL
+          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  install(TARGETS xc
+          EXPORT c_interface
+          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if(LIBXC_ENABLE_FORTRAN)
+  if (LIBXC_ENABLE_FORTRAN)
+    configure_file(cmake/libxcf03.pc.in libxcf03.pc @ONLY)
+    install(TARGETS xc xcf03
+            EXPORT f_interface
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(FILES "${PROJECT_BINARY_DIR}/xc_f03_lib_m.mod"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}${LIBXC_NAMESPACE_INSTALL_INCLUDEDIR}")
+    if (NOT MSVC)
+      install(FILES ${PROJECT_BINARY_DIR}/libxcf03.pc
+              DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
+    endif ()
+  endif ()
+
+  # <<<  Export Config  >>>
+
+  set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PN}")
+  configure_package_config_file(cmake/${PN}Config.cmake.in
+          "${CMAKE_CURRENT_BINARY_DIR}/${PN}Config.cmake"
+          INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+  write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PN}ConfigVersion.cmake
+          VERSION ${${PN}_VERSION}
+          COMPATIBILITY SameMajorVersion)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PN}Config.cmake
+          ${CMAKE_CURRENT_BINARY_DIR}/${PN}ConfigVersion.cmake
+          DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+  install(EXPORT c_interface
+          NAMESPACE "${PN}::"
+          FILE "${PN}Targets-C.cmake"
+          DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+
+  if (LIBXC_ENABLE_FORTRAN)
     install(EXPORT f_interface
-      NAMESPACE "${PN}::"
-      FILE "${PN}Targets-Fortran.cmake"
-      DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-endif()
+            NAMESPACE "${PN}::"
+            FILE "${PN}Targets-Fortran.cmake"
+            DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+  endif ()
 
-if(LIBXC_ENABLE_PYTHON)
-  set(SOURCE_PYTHON_API
-    pylibxc/__init__.py
-    pylibxc/core.py
-    pylibxc/flags.py
-    pylibxc/functional.py
-    pylibxc/structs.py
-    pylibxc/util.py
-    pylibxc/version.py
-  )
-  install(
-    FILES ${SOURCE_PYTHON_API}
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pylibxc
-  )
-  if(UNIX)
-    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \
+  if (LIBXC_ENABLE_PYTHON)
+    set(SOURCE_PYTHON_API
+            pylibxc/__init__.py
+            pylibxc/core.py
+            pylibxc/flags.py
+            pylibxc/functional.py
+            pylibxc/structs.py
+            pylibxc/util.py
+            pylibxc/version.py
+            )
+    install(
+            FILES ${SOURCE_PYTHON_API}
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/pylibxc
+    )
+    if (UNIX)
+      install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \
       ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libxc.so.${Libxc_SOMAJOR} \
       ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pylibxc/libxc.so)")
-  endif()
-endif()
+    endif ()
+  endif ()
 
-export(EXPORT c_interface
-    NAMESPACE "${PN}::"
-    FILE "${PROJECT_BINARY_DIR}/${PN}Targets.cmake")
+  export(EXPORT c_interface
+          NAMESPACE "${PN}::"
+          FILE "${PROJECT_BINARY_DIR}/${PN}Targets.cmake")
 
-if(NOT MSVC)
-  install(FILES ${PROJECT_BINARY_DIR}/libxc.pc
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
-endif()
+  if (NOT MSVC)
+    install(FILES ${PROJECT_BINARY_DIR}/libxc.pc
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
+  endif ()
+endif ()
+
+# Handle the project being included externally (e.g. FetchContent)
+if (NOT PROJECT_IS_TOP_LEVEL)
+  if (CMAKE_VERSION VERSION_GREATER 3.24)
+    return(PROPAGATE
+            Libxc_VERSION
+            Libxc_VERSION_MAJOR
+            Libxc_VERSION_MINOR
+            Libxc_VERSION_PATCH
+            Libxc_VERSION_TWEAK
+            )
+  else ()
+    set(Libxc_VERSION ${Libxc_VERSION} PARENT_SCOPE)
+    set(Libxc_VERSION_MAJOR ${Libxc_VERSION_MAJOR} PARENT_SCOPE)
+    set(Libxc_VERSION_MINOR ${Libxc_VERSION_MINOR} PARENT_SCOPE)
+    set(Libxc_VERSION_PATCH ${Libxc_VERSION_PATCH} PARENT_SCOPE)
+    set(Libxc_VERSION_TWEAK ${Libxc_VERSION_TWEAK} PARENT_SCOPE)
+  endif ()
+endif ()
