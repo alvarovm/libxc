@@ -70,10 +70,10 @@ make install
 
 The build is also responsive to
 
-* static/shared toggle `BUILD_SHARED_LIBS`
+* static/shared toggle `Libxc_SHARED_LIBS`
 * install location `CMAKE_INSTALL_PREFIX`
-* namespacing of headers `NAMESPACE_INSTALL_INCLUDEDIR`
-* of course, `CMAKE_C_COMPILER`, `BUILD_TESTING`, and `CMAKE_C_FLAGS`
+* namespacing of headers `Libxc_NAMESPACE_INSTALL_INCLUDEDIR`
+* of course, `CMAKE_C_COMPILER`, `Libxc_BUILD_TESTING`, and `CMAKE_C_FLAGS`
 
 See [CMakeLists.txt](CMakeLists.txt) for options details. All these build options should be passed as `cmake -DOPTION`.
 
@@ -85,6 +85,16 @@ CMake builds install with `LibxcConfig.cmake`, `LibxcConfigVersion.cmake`, and `
 * `find_package(Libxc 3.0.0 EXACT CONFIG REQUIRED COMPONENTS static)` - find Libxc exactly version 3.0.0 built with static libraries or die trying
 
 See [cmake/LibxcConfig.cmake.in](cmake/LibxcConfig.cmake.in) for details of how to detect the Config file and what CMake variables and targets are exported to your project.
+
+You can also include Libxc as an `ExternalProject`, commonly using [`FetchContent`](https://cmake.org/cmake/help/latest/module/FetchContent.html). For example:
+```cmake
+FetchContent_Declare(
+        Libxc
+        GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
+        GIT_TAG        6.2.0 
+        OVERRIDE_FIND_PACKAGE)
+find_package(Libxc)
+```
 
 #### Use with CMake
 

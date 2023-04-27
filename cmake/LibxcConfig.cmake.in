@@ -74,7 +74,7 @@ list(FIND ${PN}_FIND_COMPONENTS "shared" _seek_shared)
 list(FIND ${PN}_FIND_COMPONENTS "static" _seek_static)
 
 # check library language component
-# * using EXISTS Targets-Fortran instead of @ENABLE_FORTRAN@ so
+# * using EXISTS Targets-Fortran instead of LIBXC_ENABLE_FORTRAN so
 #   separate C/Fortran packages don't clobber this file
 set(${PN}_C_FOUND 1)
 list(FIND ${PN}_FIND_COMPONENTS "C" _seek_C)

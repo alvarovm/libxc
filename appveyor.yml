@@ -18,16 +18,16 @@ before_build:
   - mkdir libxc_build && cd libxc_build
   - cmd: cmake -A %PLATFORM%
           -DCMAKE_BUILD_TYPE=%CONFIGURATION%
-          -DENABLE_XHOST=OFF
-          -DDISABLE_KXC=ON
-          -DDISABLE_LXC=ON
+          -DLIBXC_ENABLE_XHOST=OFF
+          -DLIBXC_DISABLE_KXC=ON
+          -DLIBXC_DISABLE_LXC=ON
           -DCMAKE_C_FLAGS="/wd4101 /wd4996"
           ..
   - sh: cmake
           -DCMAKE_BUILD_TYPE=$CONFIGURATION
-          -DENABLE_XHOST=OFF
-          -DDISABLE_KXC=ON
-          -DDISABLE_LXC=ON
+          -DLIBXC_ENABLE_XHOST=OFF
+          -DLIBXC_DISABLE_KXC=ON
+          -DLIBXC_DISABLE_LXC=ON
           ..
 
 build_script:
