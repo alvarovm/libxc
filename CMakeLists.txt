@@ -1,28 +1,59 @@
-cmake_policy(SET CMP0048 NEW)  # project_VERSION* variables populated from project(... VERSION x.x.x) string
-project(Libxc
-  LANGUAGES C)
-set(Libxc_AUTHORS      "Miguel A.L. Marques and others")
-set(Libxc_DESCRIPTION  "Exchange-correlation functionals for density-functional theory")
-set(Libxc_EMAIL        "libxc@tddft.org")
-set(Libxc_URL          "http://www.tddft.org/programs/Libxc")
-set(Libxc_LICENSE      "Mozilla Public License, version 2.0 (MPL-2.0)")
-
+## Compatibility for older version
 cmake_minimum_required(VERSION 3.1)
+
+# Extract project version before setting it
+file(STRINGS "configure.ac" _libxc_configure_ac
+        REGEX "AC_INIT")
+foreach (ver ${_libxc_configure_ac})
+    if (ver MATCHES "^AC_INIT..libxc...([0-9]+).([0-9]+).([0-9]+).*$")
+        # TODO: Move away from manually defined version from autotools
+        set(PROJECT_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${CMAKE_MATCH_3}")
+        break()
+    endif ()
+endforeach ()
+
+# Compatibility for older cmake version
+set(cmake_compatibility "")
+# TODO: Move this in project() when minimum cmake version is >= 3.9
+if (CMAKE_VERSION VERSION_GREATER 3.8)
+  list(APPEND cmake_compatibility DESCRIPTION "Exchange-correlation functionals for density-functional theory")
+else ()
+  set(Libxc_DESCRIPTION "Exchange-correlation functionals for density-functional theory")
+endif ()
+# TODO: Move this in project() when minimum cmake version is >= 3.12
+if (CMAKE_VERSION VERSION_GREATER 3.11)
+  list(APPEND cmake_compatibility HOMEPAGE_URL "http://www.tddft.org/programs/Libxc")
+else ()
+  set(Libxc_HOMEPAGE_URL "http://www.tddft.org/programs/Libxc")
+endif ()
+
+project(Libxc
+        VERSION ${PROJECT_VERSION}
+        LANGUAGES C
+        ${cmake_compatibility})
+set(Libxc_AUTHORS      "Miguel A.L. Marques and others")
+set(Libxc_EMAIL        "libxc@tddft.org")
+set(Libxc_URL          "${Libxc_HOMEPAGE_URL}")
+set(Libxc_LICENSE      "Mozilla Public License, version 2.0 (MPL-2.0)")
 set(CMAKE_C_STANDARD 99)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+# TODO: Remove when minimum cmake version is >= 3.21
+if (NOT DEFINED Libxc_IS_TOP_LEVEL)
+  if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(PROJECT_IS_TOP_LEVEL ON)
+  else ()
+    set(PROJECT_IS_TOP_LEVEL OFF)
+  endif ()
+endif ()
 
 ################################### Options ####################################
 include(psi4OptionsTools)
 include(Libxc_helpers)
 option_with_default(CMAKE_BUILD_TYPE "Build type" Release)
 option_with_print(LIBXC_IGNORE_DEPRECATED "Ignore any deprecated option of Libxc. Necessary if you need to pass an option that was deprecated by Libxc but used by another package" OFF)
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  option_with_print(LIBXC_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" ON)
-  option_with_print(LIBXC_BUILD_TESTING "Compile the testing infrastructure" ON)
-else()
-  option_with_print(LIBXC_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" OFF)
-  option_with_print(LIBXC_BUILD_TESTING "Compile the testing infrastructure" OFF)
-endif ()
+option_with_print(LIBXC_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" ${PROJECT_IS_TOP_LEVEL})
+option_with_print(LIBXC_BUILD_TESTING "Compile the testing infrastructure" ${PROJECT_IS_TOP_LEVEL})
 # TODO: Remove deprecated options on next release cycle
 deprecate_option(BUILD_SHARED_LIBS LIBXC_SHARED_LIBS MAYBE_NAME_CLASH)
 set(BUILD_SHARED_LIBS ${LIBXC_SHARED_LIBS})
@@ -123,19 +154,6 @@ endif()
 # <<<  Build  >>>
 
 # extract project version from source
-file(STRINGS "configure.ac" _libxc_configure_ac
-     REGEX "AC_INIT")
-foreach(ver ${_libxc_configure_ac})
-    if (ver MATCHES "^AC_INIT..libxc...([0-9]+).([0-9]+).([0-9]+).*$")
-        set(PROJECT_VERSION_MAJOR ${CMAKE_MATCH_1})
-        set(PROJECT_VERSION_MINOR ${CMAKE_MATCH_2})
-        set(PROJECT_VERSION_PATCH ${CMAKE_MATCH_3})
-        # TODO: Move away from manually defined version from autotools
-        set(Libxc_VERSION_MAJOR ${CMAKE_MATCH_1})
-        set(Libxc_VERSION_MINOR ${CMAKE_MATCH_2})
-        set(Libxc_VERSION_PATCH ${CMAKE_MATCH_3})
-    endif()
-endforeach()
 
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 set(Libxc_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
