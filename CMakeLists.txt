@@ -101,18 +101,25 @@ foreach(ver ${_libxc_configure_ac})
     if (ver MATCHES "^AC_INIT..libxc...([0-9]+).([0-9]+).([0-9]+).*$")
         set(PROJECT_VERSION_MAJOR ${CMAKE_MATCH_1})
         set(PROJECT_VERSION_MINOR ${CMAKE_MATCH_2})
-        set(PROJECT_VERSION_MICRO ${CMAKE_MATCH_3})
+        set(PROJECT_VERSION_PATCH ${CMAKE_MATCH_3})
     endif()
 endforeach()
 
-set(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_MICRO})
+set(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 message(STATUS "Version: Full ${PROJECT_VERSION}")
+
+# CMake conventional variables (prune version handling in future when set from project() rather than configure.ac)
+set(${PN}_VERSION       ${PROJECT_VERSION})
+set(${PN}_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(${PN}_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(${PN}_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+message(STATUS "Version: Full ${Libxc_VERSION}")
 
 # repurpose xc_version from Make for CMake
 set(VERSION ${PROJECT_VERSION})
 set(XC_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
 set(XC_MINOR_VERSION ${PROJECT_VERSION_MINOR})
-set(XC_MICRO_VERSION ${PROJECT_VERSION_MICRO})
+set(XC_MICRO_VERSION ${PROJECT_VERSION_PATCH})
 configure_file(xc_version.h.in xc_version.h @ONLY)
 
 # create dummy config.h
