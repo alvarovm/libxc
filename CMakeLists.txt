@@ -25,6 +25,7 @@ endif()
 include(psi4OptionsTools)
 option_with_default(CMAKE_BUILD_TYPE "Build type" Release)
 option_with_print(BUILD_SHARED_LIBS "Build final library as shared, not static. For Windows, also add CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON" OFF)
+option_with_print(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option_with_print(BUILD_TESTING "Compile the testing infrastructure" ON)
 option_with_default(BUILD_FPIC "Libraries will be compiled with position independent code" ON)
 if((${BUILD_SHARED_LIBS}) AND NOT ${BUILD_FPIC})
@@ -91,6 +92,23 @@ endif(DISABLE_LXC)
 if(NOT DISABLE_FHC)
   add_definitions (-DXC_ENFORCE_FERMI_HOLE_CURVATURE)
 endif(NOT DISABLE_FHC)
+
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  if(ENABLE_ASAN)
+    add_compile_options(
+      -fsanitize=address
+      -fsanitize-address-use-after-scope
+      -fno-omit-frame-pointer
+      -fsanitize=pointer-subtract
+      )
+    add_link_options(
+      -fsanitize=address
+      -fsanitize-address-use-after-scope
+      -fno-omit-frame-pointer
+      -fsanitize=pointer-subtract
+      )
+  endif()
+endif()
 
 # <<<  Build  >>>
 
