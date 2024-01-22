@@ -38,10 +38,21 @@ if(${ENABLE_PYTHON} AND NOT ${BUILD_SHARED_LIBS})
   message(FATAL_ERROR "ENABLE_PYTHON ON requires BUILD_SHARED_LIBS ON because only shared libraries can be dynamically loaded")
 endif()
 include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
-option_with_print(DISABLE_VXC "Don't compile first derivative code" OFF)
-option_with_print(DISABLE_FXC "Don't compile second derivative code" OFF)
-option_with_print(DISABLE_KXC "Don't compile third derivative code" ON)
-option_with_print(DISABLE_LXC "Don't compile fourth derivative code" ON)
+option_with_default(LIBXC_MAX_DERIV
+  "Compile with support for up to N-th derivatives of functionals:
+    0  -- energy-only
+    1  -- first-derivative code (formerly controlled by DISABLE_VXC)
+    2  -- second-derivative code (formerly controlled by DISABLE_FXC)
+    3  -- third-derivative code (formerly controlled by DISABLE_KXC)
+    4e -- fourth-derivative code, economy selection. Skips certain functionals that are expensive and less useful.
+    4  -- fourth-derivative code (formerly controlled by DISABLE_LXC)
+   Replaces options DISABLE_VXC, DISABLE_FXC, DISABLE_KXC, DISABLE_LXC which, for continuity, still take precedence." 2)
+# ACCEPTED BUT DEPRECATED option_with_print(DISABLE_VXC "Don't compile first derivative code" OFF)
+# ACCEPTED BUT DEPRECATED option_with_print(DISABLE_FXC "Don't compile second derivative code" OFF)
+# ACCEPTED BUT DEPRECATED option_with_print(DISABLE_KXC "Don't compile third derivative code" ON)
+# TODO ADD DISABLE_LXC_ECONOMY here and in xc_deriv.cmake
+# ACCEPTED BUT DEPRECATED option_with_print(DISABLE_LXC "Don't compile fourth derivative code" ON)
+include(xc_deriv)
 option_with_print(DISABLE_FHC "Disable enforcement of Fermi hole curvature?" OFF)
 
 ######################### Process & Validate Options ###########################
@@ -70,27 +81,45 @@ if (HAVE_CBRT)
 endif (HAVE_CBRT)
 
 # Turn off derivative code
-if(DISABLE_VXC)
+if (LIBXC_MAX_DERIV STREQUAL "0")
   add_definitions (-DXC_DONT_COMPILE_VXC)
   add_definitions (-DXC_DONT_COMPILE_FXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
-endif(DISABLE_VXC)
-if(DISABLE_FXC)
+  message(STATUS "Disabling all 1st, 2nd, 3rd, 4th derivatives")
+
+elseif (LIBXC_MAX_DERIV STREQUAL "1")
   add_definitions (-DXC_DONT_COMPILE_FXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
-endif(DISABLE_FXC)
-if(DISABLE_KXC)
+  message(STATUS "Disabling all 2nd, 3rd, 4th derivatives")
+
+elseif (LIBXC_MAX_DERIV STREQUAL "2")
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
-endif(DISABLE_KXC)
-if(DISABLE_LXC)
+  message(STATUS "Disabling all 3rd, 4th derivatives")
+
+elseif (LIBXC_MAX_DERIV STREQUAL "3")
   add_definitions (-DXC_DONT_COMPILE_LXC)
-endif(DISABLE_LXC)
+  message(STATUS "Disabling all 4th derivatives")
+
+elseif (LIBXC_MAX_DERIV STREQUAL "4e")
+  # see https://gitlab.com/libxc/libxc/-/issues/448
+  set_source_files_properties(
+    src/mgga_x_br89.c
+    src/mgga_x_mbrxh_bg.c
+    src/mgga_x_mbrxc_bg.c
+    # src/mgga_x_mggac.c
+    PROPERTIES
+      COMPILE_DEFINITIONS
+        XC_DONT_COMPILE_LXC
+    )
+  message(STATUS "Disabling most expensive and least useful 4th derivatives")
+endif()
+
 if(NOT DISABLE_FHC)
   add_definitions (-DXC_ENFORCE_FERMI_HOLE_CURVATURE)
-endif(NOT DISABLE_FHC)
+endif()
 
 # <<<  Build  >>>
 
