@@ -41,7 +41,11 @@ include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimi
 option_with_print(DISABLE_VXC "Don't compile first derivative code" OFF)
 option_with_print(DISABLE_FXC "Don't compile second derivative code" OFF)
 option_with_print(DISABLE_KXC "Don't compile third derivative code" ON)
+option_with_print(DISABLE_LXC_ECONOMY "Don't compile most fourth derivative code except for the intersection of most expensive and least useful functionals" ON)
 option_with_print(DISABLE_LXC "Don't compile fourth derivative code" ON)
+if (NOT (DISABLE_LXC OR DISABLE_LXC_ECONOMY))
+    message(FATAL_ERROR "Request fourth derivatives through one or the other of DISABLE_LXC=OFF or DISABLE_LXC_ECONOMY=OFF, not both")
+endif()
 option_with_print(DISABLE_FHC "Disable enforcement of Fermi hole curvature?" OFF)
 
 ######################### Process & Validate Options ###########################
@@ -85,7 +89,18 @@ if(DISABLE_KXC)
   add_definitions (-DXC_DONT_COMPILE_KXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
 endif(DISABLE_KXC)
-if(DISABLE_LXC)
+if(NOT DISABLE_LXC_ECONOMY)
+  # see https://gitlab.com/libxc/libxc/-/issues/448
+  set_source_files_properties(
+    src/mgga_x_br89.c
+    src/mgga_x_mbrxh_bg.c
+    src/mgga_x_mbrxc_bg.c
+    # src/mgga_x_mggac.c
+    PROPERTIES
+      COMPILE_DEFINITIONS
+        XC_DONT_COMPILE_LXC
+    )
+elseif(DISABLE_LXC)
   add_definitions (-DXC_DONT_COMPILE_LXC)
 endif(DISABLE_LXC)
 if(NOT DISABLE_FHC)
