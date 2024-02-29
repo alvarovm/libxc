@@ -27,7 +27,6 @@ extern xc_func_info_type
   *xc_hyb_mgga_known_funct[];
 
 
-/*------------------------------------------------------*/
 int xc_functional_get_number(const char *name)
 {
   int ii;
@@ -54,7 +53,6 @@ int xc_functional_get_number(const char *name)
 }
 
 
-/*------------------------------------------------------*/
 char *xc_functional_get_name(int number)
 {
   int ii;
@@ -74,7 +72,6 @@ char *xc_functional_get_name(int number)
 }
 
 
-/*------------------------------------------------------*/
 int xc_family_from_id(int id, int *family, int *number)
 {
   int ii;
@@ -133,7 +130,6 @@ int xc_family_from_id(int id, int *family, int *number)
   return XC_FAMILY_UNKNOWN;
 }
 
-/*------------------------------------------------------*/
 int xc_number_of_functionals(void)
 {
   int num;
@@ -162,7 +158,6 @@ int xc_maximum_name_length(void)
   return maxlen;
 }
 
-/*------------------------------------------------------*/
 static int compare_int(const void *a, const void *b) {
   return *(int *)a - *(int *) b;
 }
@@ -244,7 +239,6 @@ void xc_available_functional_names(char **list)
   libxc_free(idlist);
 }
 
-/*------------------------------------------------------*/
 xc_func_type *xc_func_alloc(void)
 {
   xc_func_type *func;
@@ -253,7 +247,6 @@ xc_func_type *xc_func_alloc(void)
   return func;
 }
 
-/*------------------------------------------------------*/
 void xc_func_nullify(xc_func_type *func)
 {
   assert(func != NULL);
@@ -280,7 +273,6 @@ void xc_func_nullify(xc_func_type *func)
   func->tau_threshold   = 0.0;
 }
 
-/*------------------------------------------------------*/
 int xc_func_init(xc_func_type *func, int functional, int nspin)
 {
   int number;
@@ -334,8 +326,12 @@ int xc_func_init(xc_func_type *func, int functional, int nspin)
   default:
     return -2; /* family not found */
   }
-
   func->info = finfo;
+
+#ifdef XC_ENFORCE_FERMI_HOLE_CURVATURE
+  /* Set the flag to enforce Fermi curvature by default */
+  func->info->flags = func->info->flags | XC_FLAGS_ENFORCE_FHC;
+#endif
 
   /* this is initialized for each functional from the info */
   func->dens_threshold = func->info->dens_threshold;
@@ -380,7 +376,6 @@ int xc_func_init(xc_func_type *func, int functional, int nspin)
 }
 
 
-/*------------------------------------------------------*/
 void xc_func_end(xc_func_type *func)
 {
   assert(func != NULL && func->info != NULL);
@@ -415,19 +410,16 @@ void xc_func_end(xc_func_type *func)
   xc_func_nullify(func);
 }
 
-/*------------------------------------------------------*/
 void  xc_func_free(xc_func_type *p)
 {
   libxc_free(p);
 }
 
-/*------------------------------------------------------*/
 const xc_func_info_type *xc_func_get_info(const xc_func_type *p)
 {
   return p->info;
 }
 
-/*------------------------------------------------------*/
 void xc_func_set_dens_threshold(xc_func_type *p, double t_dens)
 {
   int ii;
@@ -439,7 +431,7 @@ void xc_func_set_dens_threshold(xc_func_type *p, double t_dens)
     xc_func_set_dens_threshold(p->func_aux[ii], t_dens);
   }
 }
-/*------------------------------------------------------*/
+
 void xc_func_set_zeta_threshold(xc_func_type *p, double t_zeta)
 {
   int ii;
@@ -451,7 +443,7 @@ void xc_func_set_zeta_threshold(xc_func_type *p, double t_zeta)
     xc_func_set_zeta_threshold(p->func_aux[ii], t_zeta);
   }
 }
-/*------------------------------------------------------*/
+
 void xc_func_set_sigma_threshold(xc_func_type *p, double t_sigma)
 {
   int ii;
@@ -463,7 +455,7 @@ void xc_func_set_sigma_threshold(xc_func_type *p, double t_sigma)
     xc_func_set_sigma_threshold(p->func_aux[ii], t_sigma);
   }
 }
-/*------------------------------------------------------*/
+
 void xc_func_set_tau_threshold(xc_func_type *p, double t_tau)
 {
   int ii;
@@ -476,8 +468,14 @@ void xc_func_set_tau_threshold(xc_func_type *p, double t_tau)
   }
 }
 
-/*------------------------------------------------------*/
-/* get/set external parameters                          */
+void  xc_func_set_fhc_enforcement(xc_func_type *p, int on)
+{
+  if(on)
+    p->info->flags = p->info->flags | XC_FLAGS_ENFORCE_FHC;
+  else
+    p->info->flags = p->info->flags ^ XC_FLAGS_ENFORCE_FHC;
+}
+
 void
 xc_func_set_ext_params(xc_func_type *p, const double *ext_params)
 {

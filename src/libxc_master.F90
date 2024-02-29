@@ -55,6 +55,7 @@ module xc_f03_lib_m
     xc_f03_func_set_tau_threshold, &
     xc_f03_func_set_ext_params, &
     xc_f03_func_set_ext_params_name, &
+    xc_f03_func_set_fhc_enforcement, &
     ! mixed functional interfaces
     xc_f03_num_aux_funcs, &
     xc_f03_aux_func_ids, &
@@ -364,6 +365,12 @@ module xc_f03_lib_m
       type(c_ptr), value :: p
       real(c_double), value :: tau_threshold
     end subroutine xc_func_set_tau_threshold
+
+    subroutine xc_func_set_fhc_enforcement(p, on) bind(c)
+      import
+      type(c_ptr), value :: p
+      integer(c_int), value :: on
+    end subroutine xc_func_set_fhc_enforcement
 
     subroutine xc_func_set_ext_params(p, ext_params) bind(c)
       import
@@ -1107,6 +1114,18 @@ end interface
     call xc_func_set_tau_threshold(p%ptr, tau_threshold)
 
   end subroutine xc_f03_func_set_tau_threshold
+
+  subroutine xc_f03_func_set_fhc_enforcement(p, on)
+    type(xc_f03_func_t), intent(in) :: p
+    logical,             intent(in) :: on
+
+    if(on) then
+       call xc_func_set_fhc_enforcement(p%ptr, 1_c_int)
+    else
+       call xc_func_set_fhc_enforcement(p%ptr, 0_c_int)
+    end if
+
+  end subroutine xc_f03_func_set_fhc_enforcement
 
   subroutine xc_f03_func_set_ext_params(p, ext_params)
     type(xc_f03_func_t), intent(in) :: p

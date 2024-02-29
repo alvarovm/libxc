@@ -85,6 +85,7 @@ core.xc_func_set_dens_threshold.argtypes  = (_xc_func_p, ctypes.c_double)
 core.xc_func_set_zeta_threshold.argtypes  = (_xc_func_p, ctypes.c_double)
 core.xc_func_set_sigma_threshold.argtypes = (_xc_func_p, ctypes.c_double)
 core.xc_func_set_tau_threshold.argtypes   = (_xc_func_p, ctypes.c_double)
+core.xc_func_set_fhc_enforcement.argtypes = (_xc_func_p, ctypes.c_int)
 
 
 # Bind computers
@@ -559,6 +560,13 @@ class LibXCFunctional:
             raise ValueError("The tau threshold cannot be smaller than 0.")
 
         core.xc_func_set_tau_threshold(self.xc_func, ctypes.c_double(tau_threshold))
+
+    def set_fhc_enforcement(self, enforce_fhc):
+        """Enables or disables enforcement of the Fermi hole curvature
+
+        """
+
+        core.xc_func_set_fhc_enforcement(self.xc_func, ctypes.c_int(enforce_fhc))
 
     def compute(self, inp, output=None, do_exc=True, do_vxc=True, do_fxc=False, do_kxc=False, do_lxc=False):
         """

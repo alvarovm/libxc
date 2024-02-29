@@ -73,6 +73,8 @@ const char *xc_version_string(void);
 #define XC_FLAGS_DEVELOPMENT      (1 << 14) /* 16384 */
 #define XC_FLAGS_NEEDS_LAPLACIAN  (1 << 15) /* 32768 */
 #define XC_FLAGS_NEEDS_TAU        (1 << 16) /* 65536 */
+/* enforce Fermi hole curvature? (Only affects meta-GGA routines) */
+#define XC_FLAGS_ENFORCE_FHC      (1 << 17) /* 131072 */
 
 /* This is the case for most functionals in libxc */
 #define XC_FLAGS_HAVE_ALL         (XC_FLAGS_HAVE_EXC | XC_FLAGS_HAVE_VXC | \
@@ -233,17 +235,17 @@ typedef void (*xc_lda_funcs)
 (const struct xc_func_type *p, size_t np,
  const double *rho,
  xc_lda_out_params *out);
-  
+
 typedef struct {
   const xc_lda_funcs unpol[5], pol[5];
 } xc_lda_funcs_variants;
-  
+
 /* type of the gga function */
 typedef void (*xc_gga_funcs)
 (const struct xc_func_type *p, size_t np,
  const double *rho, const double *sigma,
  xc_gga_out_params *out);
-  
+
 typedef struct {
   const xc_gga_funcs unpol[5], pol[5];
 } xc_gga_funcs_variants;
@@ -308,7 +310,7 @@ typedef struct xc_dimensions xc_dimensions;
 
 
 struct xc_func_type{
-  const xc_func_info_type *info;       /* all the information concerning this functional */
+  xc_func_info_type *info;             /* all the information concerning this functional */
   int nspin;                           /* XC_UNPOLARIZED or XC_POLARIZED  */
 
   int n_func_aux;                      /* how many auxiliary functions we need */
@@ -388,6 +390,8 @@ void  xc_func_set_zeta_threshold(xc_func_type *p, double t_zeta);
 void  xc_func_set_sigma_threshold(xc_func_type *p, double t_sigma);
 /** Sets the kinetic energy density threshold for a functional */
 void  xc_func_set_tau_threshold(xc_func_type *p, double t_tau);
+/** Turns the Fermi hole curvature enforcement on or off: 0 is off, != 0 is on */
+void  xc_func_set_fhc_enforcement(xc_func_type *p, int on);
 
 /** Sets all external parameters for a functional */
 void  xc_func_set_ext_params(xc_func_type *p, const double *ext_params);

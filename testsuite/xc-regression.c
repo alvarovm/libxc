@@ -376,6 +376,8 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Functional '%d' (%s) not found.\nPlease report a bug against functional_get_number.\n", func_id, argv[1]);
     exit(1);
   }
+  /* Turn on Fermi hole curvature enforcement, since that is how the reference data were generated */
+  xc_func_set_fhc_enforcement(&func, 1);
   /* Get flags */
   flags  = func.info->flags;
   family = func.info->family;

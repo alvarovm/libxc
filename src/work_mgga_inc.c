@@ -62,10 +62,10 @@ WORK_MGGA(ORDER_TXT, SPIN_TXT)
     /* skip all checks on tau for the kinetic functionals */
     if(p->info->flags & XC_FLAGS_NEEDS_TAU){
       my_tau[0] = m_max(p->tau_threshold, VAR(tau, ip, 0));
-#ifdef XC_ENFORCE_FERMI_HOLE_CURVATURE
-      /* The Fermi hole curvature 1 - xs^2/(8*ts) must be positive */
-      my_sigma[0] = m_min(my_sigma[0], 8.0*my_rho[0]*my_tau[0]);
-#endif
+      if(p->info->flags & XC_FLAGS_ENFORCE_FHC) {
+        /* The Fermi hole curvature 1 - xs^2/(8*ts) must be positive */
+        my_sigma[0] = m_min(my_sigma[0], 8.0*my_rho[0]*my_tau[0]);
+      }
     }
     /* lapl can have any values */
 
@@ -77,10 +77,10 @@ WORK_MGGA(ORDER_TXT, SPIN_TXT)
 
       if(p->info->flags & XC_FLAGS_NEEDS_TAU){
         my_tau[1] = m_max(p->tau_threshold, VAR(tau, ip, 1));
-#ifdef XC_ENFORCE_FERMI_HOLE_CURVATURE
-        /* The Fermi hole curvature 1 - xs^2/(8*ts) must be positive */
-        my_sigma[2] = m_min(my_sigma[2], 8.0*my_rho[1]*my_tau[1]);
-#endif
+        if(p->info->flags & XC_FLAGS_ENFORCE_FHC) {
+          /* The Fermi hole curvature 1 - xs^2/(8*ts) must be positive */
+          my_sigma[2] = m_min(my_sigma[2], 8.0*my_rho[1]*my_tau[1]);
+        }
       }
       
       my_sigma[1] = VAR(sigma, ip, 1);
@@ -183,10 +183,10 @@ WORK_MGGA_GPU(ORDER_TXT, SPIN_TXT)
   /* Many functionals shamelessly divide by tau, so we set a reasonable threshold */
   if(p->info->flags & XC_FLAGS_NEEDS_TAU){
     my_tau[0] = m_max(p->tau_threshold, VAR(tau, ip, 0));
-#ifdef XC_ENFORCE_FERMI_HOLE_CURVATURE
-    /* The Fermi hole curvature 1 - xs^2/(8*ts) must be positive */
-    my_sigma[0] = m_min(my_sigma[0], 8.0*my_rho[0]*my_tau[0]);
-#endif
+    if(p->info->flags & XC_FLAGS_ENFORCE_FHC) {
+      /* The Fermi hole curvature 1 - xs^2/(8*ts) must be positive */
+      my_sigma[0] = m_min(my_sigma[0], 8.0*my_rho[0]*my_tau[0]);
+    }
   }
   /* lapl can have any values */
   if(p->nspin == XC_POLARIZED){
@@ -196,10 +196,10 @@ WORK_MGGA_GPU(ORDER_TXT, SPIN_TXT)
     my_sigma[2] = m_max(p->sigma_threshold * p->sigma_threshold, VAR(sigma, ip, 2));
     if(p->info->flags & XC_FLAGS_NEEDS_TAU){
       my_tau[1] = m_max(p->tau_threshold, VAR(tau, ip, 1));
-#ifdef XC_ENFORCE_FERMI_HOLE_CURVATURE
-      /* The Fermi hole curvature 1 - xs^2/(8*ts) must be positive */
-      my_sigma[2] = m_min(my_sigma[2], 8.0*my_rho[1]*my_tau[1]);
-#endif
+      if(p->info->flags & XC_FLAGS_ENFORCE_FHC) {
+        /* The Fermi hole curvature 1 - xs^2/(8*ts) must be positive */
+        my_sigma[2] = m_min(my_sigma[2], 8.0*my_rho[1]*my_tau[1]);
+      }
     }
     my_sigma[1] = VAR(sigma, ip, 1);
     s_ave = 0.5*(my_sigma[0] + my_sigma[2]);
