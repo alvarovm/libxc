@@ -331,6 +331,7 @@ xc_functional_key_t xc_functional_keys[] = {
   {"lda_c_epc17_2", 329},
   {"lda_c_epc18_1", 330},
   {"lda_c_epc18_2", 331},
+  {"lda_c_utt14", 332},
   {"hyb_gga_xc_opb3lyp", 386},
   {"mgga_c_cc", 387},
   {"mgga_c_ccalda", 388},

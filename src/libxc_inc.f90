@@ -988,7 +988,10 @@
  ! epc18-2: electron-proton correlation 2018 for proton affinities
  integer(c_int), parameter, public :: XC_LDA_C_EPC18_2  =    331
 
- ! opB3LYP
+ ! UTT14: electron-nucleus correlation functional by Udagawa, Tsuneda, and Tachikawa
+ integer(c_int), parameter, public :: XC_LDA_C_UTT14  =    332
+
+ ! opB3LYP: B3LYP reoptimized in 6-311++G(2d,2p) basis set
  integer(c_int), parameter, public :: XC_HYB_GGA_XC_OPB3LYP  =    386
 
  ! Self-interaction corrected correlation functional by Schmidt et al

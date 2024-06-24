@@ -17,7 +17,8 @@ lda_order_4 = lda_c_1d_csc.mpl lda_c_pz.mpl lda_x_1d_exponential.mpl	\
   lda_x.mpl lda_k_gds08_worker.mpl lda_x_rel.mpl lda_c_pmgb06.mpl	\
   lda_k_tf.mpl lda_c_pw.mpl lda_k_zlp.mpl lda_x_sloc.mpl		\
   lda_c_chachiyo_mod.mpl lda_c_w20.mpl lda_x_yukawa.mpl			\
-  lda_c_pw_erf.mpl lda_c_epc17.mpl lda_c_epc18.mpl
+  lda_c_pw_erf.mpl lda_c_epc17.mpl lda_c_epc18.mpl lda_c_utt14.mpl	\
+  lda_c_nsf07.mpl
 
 lda_order_3 = lda_c_pk09.mpl
 

@@ -45,6 +45,7 @@ extern xc_func_info_type xc_func_info_lda_c_epc17;
 extern xc_func_info_type xc_func_info_lda_c_epc17_2;
 extern xc_func_info_type xc_func_info_lda_c_epc18_1;
 extern xc_func_info_type xc_func_info_lda_c_epc18_2;
+extern xc_func_info_type xc_func_info_lda_c_utt14;
 extern xc_func_info_type xc_func_info_lda_x_rel;
 extern xc_func_info_type xc_func_info_lda_xc_1d_ehwlrg_1;
 extern xc_func_info_type xc_func_info_lda_xc_1d_ehwlrg_2;
@@ -119,6 +120,7 @@ const xc_func_info_type *xc_lda_known_funct[] = {
   &xc_func_info_lda_c_epc17_2,
   &xc_func_info_lda_c_epc18_1,
   &xc_func_info_lda_c_epc18_2,
+  &xc_func_info_lda_c_utt14,
   &xc_func_info_lda_x_rel,
   &xc_func_info_lda_xc_1d_ehwlrg_1,
   &xc_func_info_lda_xc_1d_ehwlrg_2,
