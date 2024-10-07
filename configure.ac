@@ -282,7 +282,6 @@ AC_CONFIG_FILES([Makefile
   testsuite/pytest/Makefile
   pkgconfig/Makefile
   pkgconfig/libxc.pc
-  pkgconfig/libxcf90.pc
   pkgconfig/libxcf03.pc
   scripts/Makefile
   maple/Makefile
