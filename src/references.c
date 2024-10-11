@@ -408,7 +408,7 @@ func_reference_type xc_ref_Bursch2022_134105 = {
 func_reference_type xc_ref_Cai2024_8611 = {
   "Y. Cai, R. Michiels, F. De Luca, E. Neyts, X. Tu, A. Bogaerts, and N. Gerrits.,  J. Phys. Chem. C 128, 8611-8620 (2024)",
   "10.1021/acs.jpcc.4c01110",
-  "@article{Cai2024_8611,\n  author = {Cai, Yuxiang and Michiels, Roel and De Luca, Federica and Neyts, Erik and Tu, Xin and Bogaerts, Annemie and Gerrits, Nick},\n  title = {Improving Molecule–Metal Surface Reaction Networks Using the Meta-Generalized Gradient Approximation: {CO}$\\_2$ Hydrogenation},\n  journal = {J. Phys. Chem. C},\n  volume = {128},\n  number = {21},\n  pages = {8611-8620},\n  year = {2024},\n  doi = {10.1021/acs.jpcc.4c01110},\n  url = {https://doi.org/10.1021/acs.jpcc.4c01110}\n}\n",
+  "@article{Cai2024_8611,\n  author = {Cai, Yuxiang and Michiels, Roel and De Luca, Federica and Neyts, Erik and Tu, Xin and Bogaerts, Annemie and Gerrits, Nick},\n  title = {Improving Molecule-Metal Surface Reaction Networks Using the Meta-Generalized Gradient Approximation: {CO}$\\_2$ Hydrogenation},\n  journal = {J. Phys. Chem. C},\n  volume = {128},\n  number = {21},\n  pages = {8611-8620},\n  year = {2024},\n  doi = {10.1021/acs.jpcc.4c01110},\n  url = {https://doi.org/10.1021/acs.jpcc.4c01110}\n}\n",
   "Cai2024_8611"
 };
 
