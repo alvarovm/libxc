@@ -1760,7 +1760,8 @@ module xc_f03_funcs_m
     XC_GGA_K_ABSR2          = 507,     &
     XC_LDA_C_LP_A           = 547,     &
     XC_LDA_C_LP_B           = 548,     &
-    XC_MGGA_C_LP90          = 564
+    XC_MGGA_C_LP90          = 564,     &
+    XC_HYB_GGA_XC_BHLYP     = 436
 
 end module xc_f03_funcs_m
 

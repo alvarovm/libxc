@@ -20,6 +20,7 @@
 #define XC_LDA_C_LP_A         547 /* the next 3 functionals should be XC, not C */
 #define XC_LDA_C_LP_B         548
 #define XC_MGGA_C_LP90        564
+#define XC_HYB_GGA_XC_BHLYP   436
 
 /* These were converted to all caps */
 #define XC_LDA_C_vBH           17

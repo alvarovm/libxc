@@ -382,8 +382,8 @@
 #define  XC_HYB_GGA_XC_HJS_B97X            432 /* HJS hybrid screened exchange B97x version */
 #define  XC_HYB_GGA_XC_CAM_B3LYP           433 /* CAM version of B3LYP */
 #define  XC_HYB_GGA_XC_TUNED_CAM_B3LYP     434 /* CAM version of B3LYP, tuned for excitations and properties */
-#define  XC_HYB_GGA_XC_BHANDH              435 /* BHandH i.e. BHLYP */
-#define  XC_HYB_GGA_XC_BHANDHLYP           436 /* BHandHLYP */
+#define  XC_HYB_GGA_XC_BHANDH              435 /* BHandH: 50% LDA exchange and 50% HF exchange with 100% LYP correlation */
+#define  XC_HYB_GGA_XC_BHANDHLYP           436 /* BHandHLYP a.k.a. BHLYP: 50% B88 exchange and 50% HF exchange with 100% LYP correlation */
 #define  XC_HYB_GGA_XC_MB3LYP_RC04         437 /* B3LYP with RC04 LDA */
 #define  XC_HYB_MGGA_X_M05                 438 /* Minnesota M05 hybrid exchange functional */
 #define  XC_HYB_MGGA_X_M05_2X              439 /* Minnesota M05-2X hybrid exchange functional */
@@ -670,9 +670,9 @@
 #define  XC_MGGA_X_KTBM_23                 758 /* KTBM learned exchange - 23 */
 #define  XC_MGGA_X_KTBM_24                 759 /* KTBM learned exchange - 24 */
 #define  XC_MGGA_X_KTBM_GAP                760 /* KTBM learned exchange - GAP */
-#define  XC_MGGA_X_MSPBEL  		   761 /* MS-PBEl, a PBE-like meta-GGA exchange */
-#define  XC_MGGA_X_RMSPBEL  		   762 /* regularized MS-PBEl */
-#define  XC_MGGA_X_MSRPBEL  		   763 /* MS-RPBEl, a RPBE-like meta-GGA exchange */
-#define  XC_MGGA_X_RMSRPBEL  		   764 /* regularized MS-RPBEl */
-#define  XC_MGGA_X_MSB86BL  		   765 /* MS-B86bl, a B86b-like meta-GGA exchange */
-#define  XC_MGGA_X_RMSB86BL  		   766 /* regularized MS-B86bl */
+#define  XC_MGGA_X_MSPBEL                  761 /* MS-PBEl, a PBE-like meta-GGA exchange */
+#define  XC_MGGA_X_RMSPBEL                 762 /* regularized MS-PBEl */
+#define  XC_MGGA_X_MSRPBEL                 763 /* MS-RPBEl, a RPBE-like meta-GGA exchange */
+#define  XC_MGGA_X_RMSRPBEL                764 /* regularized MS-RPBEl */
+#define  XC_MGGA_X_MSB86BL                 765 /* MS-B86bl, a B86b-like meta-GGA exchange */
+#define  XC_MGGA_X_RMSB86BL                766 /* regularized MS-B86bl */
